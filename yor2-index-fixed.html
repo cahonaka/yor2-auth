@@ -1,124 +1,196 @@
+
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#090611">
-  <title>YOR 2 — Вход</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top,#291044 0,#10091b 42%,#07060b 100%);color:#fff;font-family:Arial,sans-serif}
-    .card{width:min(100%,390px);padding:28px 22px;border:1px solid #7138a6;border-radius:24px;background:#120d1deF;box-shadow:0 0 30px #8b35d455}
-    h1{margin:0;text-align:center;font-size:36px;letter-spacing:5px;color:#c58cff}
-    .sub{text-align:center;color:#c8b6d8;margin:8px 0 26px}
-    label{display:block;margin:14px 0 7px;color:#e7d8f5}
-    input{width:100%;padding:14px;border-radius:12px;border:1px solid #69418a;background:#090611;color:white;font-size:16px;outline:none}
-    button{width:100%;margin-top:14px;padding:14px;border:0;border-radius:12px;background:linear-gradient(90deg,#7b2bd1,#b04cff);color:white;font-size:16px;font-weight:bold}
-    button:disabled{opacity:.55}
-    #status{min-height:44px;margin-top:16px;color:#d9c5ed;line-height:1.4;font-size:14px}
-    .hint{font-size:12px;color:#9e8cac;line-height:1.4;margin-top:12px}
-    #recaptcha-container{margin-top:14px;display:flex;justify-content:center;overflow:hidden}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090611">
+<title>YOR 2 — Вход</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;min-height:100vh;display:grid;place-items:center;
+padding:24px;background:radial-gradient(circle at top,#291044 0,#10091b 42%,#07060b 100%);
+color:#fff;font-family:Arial,sans-serif
+}
+.card{
+width:min(100%,390px);padding:28px 22px;
+border:1px solid #7138a6;border-radius:24px;
+background:#120d1def;box-shadow:0 0 30px #8b35d455
+}
+h1{text-align:center;font-size:36px;letter-spacing:5px;color:#c58cff;margin:0}
+.sub{text-align:center;color:#c8b6d8;margin:8px 0 26px}
+label{display:block;margin:14px 0 7px;color:#e7d8f5}
+input{
+width:100%;padding:14px;border-radius:12px;
+border:1px solid #69418a;background:#090611;
+color:white;font-size:16px;outline:none
+}
+button{
+width:100%;margin-top:14px;padding:14px;border:0;
+border-radius:12px;background:linear-gradient(90deg,#7b2bd1,#b04cff);
+color:white;font-size:16px;font-weight:bold
+}
+button:disabled{opacity:.5}
+#status{min-height:44px;margin-top:16px;color:#d9c5ed;line-height:1.4;font-size:14px}
+.hint{font-size:12px;color:#9e8cac;line-height:1.4;margin-top:12px}
+#recaptcha-container{margin-top:14px;display:flex;justify-content:center;overflow:hidden}
+</style>
 </head>
 <body>
-  <main class="card">
-    <h1>YOR 2</h1>
-    <div class="sub">Вход по номеру телефона</div>
-    <label for="phone">Номер телефона</label>
-    <input id="phone" type="tel" placeholder="+7 900 123-45-67" autocomplete="tel">
-    <div id="recaptcha-container"></div>
-    <button id="send">Получить SMS-код</button>
-    <label for="code">SMS-код</label>
-    <input id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="Введите код из SMS">
-    <button id="verify" disabled>Подтвердить код</button>
-    <div id="status" role="status"></div>
-    <div class="hint">Введите номер в международном формате, например +7… или +992… . Для защиты от автоматических запросов Firebase может попросить пройти проверку.</div>
-  </main>
+<main class="card">
+<h1>YOR 2</h1>
+<div class="sub">Вход по номеру телефона</div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDhLGxXGFMGlqtPLRYnXn9M2zE2ODYd5rk",
-      authDomain: "yor-2-96bbd.firebaseapp.com",
-      projectId: "yor-2-96bbd",
-      storageBucket: "yor-2-96bbd.firebasestorage.app",
-      messagingSenderId: "841690613594",
-      appId: "1:841690613594:web:a69ef7b7de2ece7dde5563",
-      measurementId: "G-6C39MKH921"
-    };
+<label for="phone">Номер телефона</label>
+<input id="phone" type="tel" placeholder="+7 900 123-45-67" autocomplete="tel">
+
+<div id="recaptcha-container"></div>
+
+<button id="send" disabled>Получить SMS-код</button>
+
+<label for="code">SMS-код</label>
+<input id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="Введите код из SMS">
+
+<button id="verify" disabled>Подтвердить код</button>
+
+<div id="status" role="status">Загружаем проверку безопасности…</div>
+<div class="hint">
+Введите номер в международном формате: +7 или +992.
+Для защиты от автоматических запросов Firebase использует reCAPTCHA.
+</div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDhLGxXGFMGlqtPLRYnXn9M2zE2ODYd5rk",
+  authDomain: "yor-2-96bbd.firebaseapp.com",
+  projectId: "yor-2-96bbd",
+  storageBucket: "yor-2-96bbd.firebasestorage.app",
+  messagingSenderId: "841690613594",
+  appId: "1:841690613594:web:a69ef7b7de2ece7dde5563",
+  measurementId: "G-6C39MKH921"
+};
+
+const phone = document.getElementById("phone");
+const code = document.getElementById("code");
+const send = document.getElementById("send");
+const verify = document.getElementById("verify");
+const status = document.getElementById("status");
+
+let auth;
+let verifier;
+let widgetId = null;
+let confirmationResult = null;
+let captchaReady = false;
+
+function setStatus(message) {
+  status.textContent = message;
+}
+
+async function initialize() {
+  try {
+    if (!window.firebase) {
+      throw new Error("Firebase SDK не загрузился. Проверьте интернет.");
+    }
 
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    auth = firebase.auth();
     auth.languageCode = "ru";
 
-    const phone = document.getElementById("phone");
-    const code = document.getElementById("code");
-    const send = document.getElementById("send");
-    const verify = document.getElementById("verify");
-    const status = document.getElementById("status");
-    let confirmationResult = null;
-    let verifier = null;
+    // Третий аргумент не передаём:
+    // Firebase использует приложение по умолчанию.
+    verifier = new firebase.auth.RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "normal",
+        callback: function() {
+          setStatus("Проверка пройдена. Можно запросить SMS.");
+        },
+        "expired-callback": function() {
+          setStatus("Проверка истекла. Пройдите её ещё раз.");
+        }
+      }
+    );
 
-    function setStatus(message){ status.textContent = message; }
+    widgetId = await verifier.render();
+    captchaReady = true;
+    send.disabled = false;
+    setStatus("Проверка загружена. Введите номер телефона.");
 
-    window.addEventListener("load", () => {
-      try {
-        verifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
-          size: "normal",
-          callback: () => setStatus("Проверка пройдена. Можно запросить SMS-код."),
-          "expired-callback": () => setStatus("Проверка истекла. Пройдите её ещё раз.")
-        }, auth);
-        verifier.render();
-      } catch (e) {
-        setStatus("Не удалось загрузить проверку безопасности. Обновите страницу.");
-      }
-    });
+  } catch (error) {
+    console.error("YOR reCAPTCHA error:", error);
+    setStatus("Ошибка загрузки проверки: " +
+      (error.message || error.code || "неизвестная ошибка"));
+  }
+}
 
-    send.addEventListener("click", async () => {
-      const number = phone.value.trim().replace(/[\s()-]/g, "");
-      if (!/^\+[1-9]\d{7,14}$/.test(number)) {
-        setStatus("Введите номер в международном формате, например +79991234567.");
-        return;
-      }
-      if (!verifier) {
-        setStatus("Проверка безопасности ещё загружается. Подождите немного.");
-        return;
-      }
-      send.disabled = true;
-      setStatus("Отправляем запрос на SMS…");
-      try {
-        confirmationResult = await auth.signInWithPhoneNumber(number, verifier);
-        verify.disabled = false;
-        setStatus("SMS отправлено. Введите полученный код.");
-      } catch (e) {
-        setStatus("Не удалось отправить SMS: " + (e.message || e.code || "ошибка"));
-        try { await verifier.render(); } catch (_) {}
-      } finally {
-        send.disabled = false;
-      }
-    });
+send.addEventListener("click", async function() {
+  const number = phone.value.trim().replace(/[\s()-]/g, "");
 
-    verify.addEventListener("click", async () => {
-      const entered = code.value.trim();
-      if (!confirmationResult) {
-        setStatus("Сначала запросите SMS-код.");
-        return;
-      }
-      if (!entered) {
-        setStatus("Введите SMS-код.");
-        return;
-      }
-      verify.disabled = true;
-      setStatus("Проверяем код…");
-      try {
-        const result = await confirmationResult.confirm(entered);
-        setStatus("Номер подтверждён. Вход выполнен: " + result.user.phoneNumber);
-      } catch (e) {
-        setStatus("Код не принят: " + (e.message || e.code || "ошибка"));
-        verify.disabled = false;
-      }
-    });
-  </script>
+  if (!/^\+[1-9]\d{7,14}$/.test(number)) {
+    setStatus("Введите номер в международном формате, например +79991234567.");
+    return;
+  }
+
+  if (!captchaReady || !verifier) {
+    setStatus("Проверка безопасности ещё не готова.");
+    return;
+  }
+
+  send.disabled = true;
+  setStatus("Отправляем запрос на SMS…");
+
+  try {
+    confirmationResult = await auth.signInWithPhoneNumber(number, verifier);
+    verify.disabled = false;
+    setStatus("SMS отправлено. Введите полученный код.");
+
+  } catch (error) {
+    console.error("YOR SMS error:", error);
+    setStatus("Ошибка отправки SMS: " +
+      (error.message || error.code || "неизвестная ошибка"));
+
+    if (widgetId !== null && window.grecaptcha) {
+      grecaptcha.reset(widgetId);
+    }
+  } finally {
+    send.disabled = false;
+  }
+});
+
+verify.addEventListener("click", async function() {
+  const entered = code.value.trim();
+
+  if (!confirmationResult) {
+    setStatus("Сначала запросите SMS-код.");
+    return;
+  }
+
+  if (!entered) {
+    setStatus("Введите SMS-код.");
+    return;
+  }
+
+  verify.disabled = true;
+  setStatus("Проверяем код…");
+
+  try {
+    const result = await confirmationResult.confirm(entered);
+    setStatus("Номер подтверждён! Вход выполнен: " +
+      result.user.phoneNumber);
+  } catch (error) {
+    console.error("YOR verification error:", error);
+    setStatus("Ошибка подтверждения: " +
+      (error.message || error.code || "неизвестная ошибка"));
+    verify.disabled = false;
+  }
+});
+
+initialize();
+</script>
 </body>
 </html>
