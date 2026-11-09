@@ -57,12 +57,12 @@ button:disabled{opacity:.5}
 <div id="status" role="status" aria-live="polite">Введите имя, email и пароль.</div>
 <div class="hint">
 Для регистрации укажите имя, действующий email и пароль не менее 6 символов.
-SMS и reCAPTCHA для этого способа входа не нужны.
 </div>
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -91,9 +91,9 @@ registerButton.disabled = busy;
 loginButton.disabled = busy;
 }
 
-try {
 if (!window.firebase) {
-throw new Error("Firebase не загрузился. Проверьте интернет.");
+setStatus("Firebase не загрузился. Проверьте интернет.");
+throw new Error("Firebase не загрузился");
 }
 
 if (!firebase.apps.length) {
@@ -101,8 +101,20 @@ firebase.initializeApp(firebaseConfig);
 }
 
 const auth = firebase.auth();
+const db = firebase.firestore();
 auth.languageCode = "ru";
 
+// Сохранение профиля пользователя в коллекцию users
+async function saveUserProfile(user, name) {
+await db.collection("users").doc(user.uid).set({
+uid: user.uid,
+name: name || user.displayName || "Пользователь",
+email: user.email,
+createdAt: firebase.firestore.FieldValue.serverTimestamp()
+}, {merge: true});
+}
+
+// Регистрация
 registerButton.addEventListener("click", async function() {
 const name = nameInput.value.trim();
 const email = emailInput.value.trim();
@@ -124,21 +136,30 @@ setStatus("Создаём аккаунт...");
 try {
 const result = await auth.createUserWithEmailAndPassword(email, password);
 await result.user.updateProfile({displayName: name});
-setStatus("Аккаунт YOR 2 успешно создан! Вы вошли.");
+
+setStatus("Аккаунт создан. Сохраняем профиль...");
+
+await saveUserProfile(result.user, name);
+
+setStatus("Ура! Аккаунт создан и профиль сохранён в YOR 2!");
 } catch (error) {
 console.error(error);
+
 const messages = {
 "auth/email-already-in-use": "Этот email уже зарегистрирован. Нажмите Войти.",
 "auth/invalid-email": "Проверьте правильность email.",
 "auth/weak-password": "Пароль слишком простой.",
-"auth/operation-not-allowed": "В Firebase не включён Email/Password."
+"auth/operation-not-allowed": "В Firebase не включён Email/Password.",
+"permission-denied": "Нет доступа к базе. Нужно настроить Rules в Firestore."
 };
-setStatus(messages[error.code] || ("Ошибка регистрации: " + error.message));
+
+setStatus(messages[error.code] || ("Ошибка: " + error.message));
 } finally {
 setBusy(false);
 }
 });
 
+// Вход
 loginButton.addEventListener("click", async function() {
 const email = emailInput.value.trim();
 const password = passwordInput.value;
@@ -152,18 +173,24 @@ setBusy(true);
 setStatus("Выполняем вход...");
 
 try {
-await auth.signInWithEmailAndPassword(email, password);
+const result = await auth.signInWithEmailAndPassword(email, password);
+
+await saveUserProfile(result.user, result.user.displayName);
+
 setStatus("Вы успешно вошли в YOR 2!");
 } catch (error) {
 console.error(error);
+
 const messages = {
 "auth/invalid-email": "Проверьте правильность email.",
 "auth/user-not-found": "Аккаунт не найден. Сначала зарегистрируйтесь.",
 "auth/wrong-password": "Неверный пароль.",
 "auth/invalid-credential": "Неверный email или пароль.",
-"auth/operation-not-allowed": "В Firebase не включён Email/Password."
+"auth/operation-not-allowed": "В Firebase не включён Email/Password.",
+"permission-denied": "Нет доступа к базе. Нужно настроить Rules в Firestore."
 };
-setStatus(messages[error.code] || ("Ошибка входа: " + error.message));
+
+setStatus(messages[error.code] || ("Ошибка: " + error.message));
 } finally {
 setBusy(false);
 }
@@ -174,11 +201,6 @@ if (user) {
 setStatus("Вы вошли в YOR 2 как " + (user.displayName || user.email));
 }
 });
-
-} catch (error) {
-console.error(error);
-setStatus("Ошибка запуска: " + error.message);
-}
 </script>
 </body>
 </html>
