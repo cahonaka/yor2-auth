@@ -104,14 +104,22 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 auth.languageCode = "ru";
 
-// Сохранение профиля пользователя в коллекцию users
+// Сохранение личного и публичного профиля
 async function saveUserProfile(user, name) {
-await db.collection("users").doc(user.uid).set({
-uid: user.uid,
-name: name || user.displayName || "Пользователь",
-email: user.email,
-createdAt: firebase.firestore.FieldValue.serverTimestamp()
-}, {merge: true});
+  const userName = name || user.displayName || "Пользователь";
+
+  await db.collection("users").doc(user.uid).set({
+    uid: user.uid,
+    name: userName,
+    email: user.email,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, {merge: true});
+
+  await db.collection("publicProfiles").doc(user.uid).set({
+    uid: user.uid,
+    name: userName,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, {merge: true});
 }
 
 // Регистрация
