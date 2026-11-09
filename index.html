@@ -49,7 +49,7 @@ button:disabled{opacity:.5}
 <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
 
 <label for="password">Пароль</label>
-<input id="password" type="password" placeholder="Не менее 6 символов" autocomplete="new-password">
+<input id="password" type="password" placeholder="Не менее 6 символов" autocomplete="current-password">
 
 <button id="register" type="button">Создать аккаунт</button>
 <button id="login" type="button">Войти</button>
@@ -108,18 +108,30 @@ auth.languageCode = "ru";
 async function saveUserProfile(user, name) {
   const userName = name || user.displayName || "Пользователь";
 
-  await db.collection("users").doc(user.uid).set({
-    uid: user.uid,
-    name: userName,
-    email: user.email,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, {merge: true});
+  try {
+    await db.collection("users").doc(user.uid).set({
+      uid: user.uid,
+      name: userName,
+      email: user.email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true});
+  } catch (error) {
+    console.error("Ошибка сохранения users:", error);
+    throw new Error("Не удалось сохранить личный профиль: " + error.message);
+  }
 
-  await db.collection("publicProfiles").doc(user.uid).set({
-    uid: user.uid,
-    name: userName,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, {merge: true});
+  try {
+    await db.collection("publicProfiles").doc(user.uid).set({
+      uid: user.uid,
+      name: userName,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true});
+  } catch (error) {
+    console.error("Ошибка сохранения publicProfiles:", error);
+    throw new Error("Не удалось создать публичный профиль: " + error.message);
+  }
+
+  return true;
 }
 
 // Регистрация
@@ -145,23 +157,14 @@ try {
 const result = await auth.createUserWithEmailAndPassword(email, password);
 await result.user.updateProfile({displayName: name});
 
-setStatus("Аккаунт создан. Сохраняем профиль...");
+setStatus("Аккаунт создан. Сохраняем профили...");
 
 await saveUserProfile(result.user, name);
 
-setStatus("Ура! Аккаунт создан и профиль сохранён в YOR 2!");
+setStatus("Ура! Аккаунт создан. Личный и публичный профили сохранены!");
 } catch (error) {
 console.error(error);
-
-const messages = {
-"auth/email-already-in-use": "Этот email уже зарегистрирован. Нажмите Войти.",
-"auth/invalid-email": "Проверьте правильность email.",
-"auth/weak-password": "Пароль слишком простой.",
-"auth/operation-not-allowed": "В Firebase не включён Email/Password.",
-"permission-denied": "Нет доступа к базе. Нужно настроить Rules в Firestore."
-};
-
-setStatus(messages[error.code] || ("Ошибка: " + error.message));
+setStatus("Ошибка: " + error.message);
 } finally {
 setBusy(false);
 }
@@ -183,28 +186,18 @@ setStatus("Выполняем вход...");
 try {
 const result = await auth.signInWithEmailAndPassword(email, password);
 
+setStatus("Вход выполнен. Проверяем профили...");
+
 await saveUserProfile(result.user, result.user.displayName);
 
-setStatus("Вы успешно вошли в YOR 2!");
+setStatus("Вы успешно вошли в YOR 2! Профили сохранены.");
 } catch (error) {
 console.error(error);
-
-const messages = {
-"auth/invalid-email": "Проверьте правильность email.",
-"auth/user-not-found": "Аккаунт не найден. Сначала зарегистрируйтесь.",
-"auth/wrong-password": "Неверный пароль.",
-"auth/invalid-credential": "Неверный email или пароль.",
-"auth/operation-not-allowed": "В Firebase не включён Email/Password.",
-"permission-denied": "Нет доступа к базе. Нужно настроить Rules в Firestore."
-};
-
-setStatus(messages[error.code] || ("Ошибка: " + error.message));
+setStatus("Ошибка: " + error.message);
 } finally {
 setBusy(false);
 }
 });
-
-
 </script>
 </body>
 </html>
