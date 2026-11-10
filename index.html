@@ -6,119 +6,70 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090611">
 <title>YOR 2</title>
-
 <style>
 *{box-sizing:border-box}
-body{
-margin:0;min-height:100vh;padding:24px;
-display:grid;place-items:center;
-background:radial-gradient(circle at top,#291044 0,#10091b 42%,#07060b 100%);
-color:white;font-family:Arial,sans-serif
-}
-.card{
-width:min(100%,420px);padding:28px 22px;
-border:1px solid #7138a6;border-radius:24px;
-background:#120d1def;box-shadow:0 0 30px #8b35d455
-}
+body{margin:0;min-height:100vh;padding:24px;display:grid;place-items:center;background:radial-gradient(circle at top,#291044 0,#10091b 42%,#07060b 100%);color:white;font-family:Arial,sans-serif}
+.card{width:min(100%,420px);padding:28px 22px;border:1px solid #7138a6;border-radius:24px;background:#120d1def;box-shadow:0 0 30px #8b35d455}
 h1{text-align:center;font-size:36px;letter-spacing:5px;color:#c58cff;margin:0}
 .sub{text-align:center;color:#c8b6d8;margin:8px 0 26px}
 label{display:block;margin:14px 0 7px;color:#e7d8f5}
-input{
-width:100%;padding:14px;border-radius:12px;
-border:1px solid #69418a;background:#090611;
-color:white;font-size:16px;outline:none
-}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid #69418a;background:#090611;color:white;font-size:16px;outline:none}
 input:focus{border-color:#b04cff}
-button{
-width:100%;margin-top:14px;padding:14px;border:0;
-border-radius:12px;background:linear-gradient(90deg,#7b2bd1,#b04cff);
-color:white;font-size:16px;font-weight:bold;cursor:pointer
-}
+button{width:100%;margin-top:14px;padding:14px;border:0;border-radius:12px;background:linear-gradient(90deg,#7b2bd1,#b04cff);color:white;font-size:16px;font-weight:bold;cursor:pointer}
 button:disabled{opacity:.5;cursor:not-allowed}
-#status,#searchStatus{
-min-height:30px;margin-top:16px;color:#d9c5ed;
-line-height:1.4;font-size:14px
-}
+#status,#searchStatus{min-height:30px;margin-top:16px;color:#d9c5ed;line-height:1.4;font-size:14px;overflow-wrap:anywhere}
 .hint{font-size:12px;color:#9e8cac;line-height:1.4;margin-top:12px}
 #searchSection{display:none;margin-top:24px}
-.user-result{
-padding:14px;margin-top:10px;border:1px solid #69418a;
-border-radius:12px;background:#090611;cursor:pointer
-}
+.user-result{padding:14px;margin-top:10px;border:1px solid #69418a;border-radius:12px;background:#090611;cursor:pointer}
 .user-result:active{border-color:#b04cff}
 .user-name{font-weight:bold;color:#d9aaff;font-size:17px}
 .user-caption{font-size:12px;color:#9e8cac;margin-top:5px}
-#chatMessages{
-height:300px;overflow-y:auto;border:1px solid #69418a;
-border-radius:12px;padding:12px;background:#090611;
-display:flex;flex-direction:column;gap:10px
-}
-.message{
-max-width:85%;padding:10px 12px;border-radius:12px;
-background:#30203f;overflow-wrap:anywhere;
-align-self:flex-start
-}
-.message.mine{
-background:#65309a;align-self:flex-end
-}
+#chatMessages{height:300px;overflow-y:auto;border:1px solid #69418a;border-radius:12px;padding:12px;background:#090611;display:flex;flex-direction:column;gap:10px}
+.message{max-width:85%;padding:10px 12px;border-radius:12px;background:#30203f;overflow-wrap:anywhere;align-self:flex-start}
+.message.mine{background:#65309a;align-self:flex-end}
 .message-author{font-size:11px;color:#e3c7ff;margin-bottom:5px}
 .message-time{font-size:10px;color:#d1b8e4;margin-top:5px;text-align:right}
 #chatSection{display:none;margin-top:24px}
 #messageInput{margin-top:12px}
 </style>
 </head>
-
 <body>
 <main class="card">
-
 <h1>YOR 2</h1>
 <div class="sub">Твой мессенджер</div>
 
 <section id="authSection">
 <label for="name">Имя</label>
 <input id="name" type="text" placeholder="Как вас зовут">
-
 <label for="email">Email</label>
 <input id="email" type="email" placeholder="name@example.com">
-
 <label for="password">Пароль</label>
 <input id="password" type="password" placeholder="Не менее 6 символов">
-
 <button id="register" type="button">Создать аккаунт</button>
 <button id="login" type="button">Войти</button>
-
 <div id="status">Введите имя, email и пароль.</div>
 </section>
 
 <section id="searchSection">
 <h2 style="color:#c58cff">Поиск пользователей</h2>
 <button id="logoutButton" type="button">Выйти из аккаунта</button>
-
 <label for="searchInput">Имя пользователя</label>
 <input id="searchInput" type="text" placeholder="Введите имя для поиска">
-
 <button id="searchButton" type="button">Найти пользователя</button>
-
 <div id="searchStatus">Ищи пользователей YOR 2 по имени.</div>
 <div id="results"></div>
 
 <div id="chatSection">
 <h2 id="chatTitle" style="color:#c58cff">Личный чат</h2>
-
 <div id="chatMessages">
 <div style="color:#9e8cac">Загружаем историю сообщений...</div>
 </div>
-
-<input id="messageInput" type="text" maxlength="4000"
-placeholder="Напиши сообщение...">
-
+<input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
 <button id="sendMessageButton" type="button">Отправить</button>
 <button id="backToSearchButton" type="button">Назад к поиску</button>
 </div>
 </section>
-
 <div class="hint">YOR 2 — общение без границ.</div>
-
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -136,67 +87,57 @@ appId: "1:841690613594:web:a69ef7b7de2ece7dde5563",
 measurementId: "G-6C39MKH921"
 };
 
-const nameInput = document.getElementById("name");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const registerButton = document.getElementById("register");
-const loginButton = document.getElementById("login");
-const statusBox = document.getElementById("status");
-const authSection = document.getElementById("authSection");
-const searchSection = document.getElementById("searchSection");
-const searchInput = document.getElementById("searchInput");
-const searchButton = document.getElementById("searchButton");
-const logoutButton = document.getElementById("logoutButton");
-const searchStatus = document.getElementById("searchStatus");
-const results = document.getElementById("results");
+const nameInput=document.getElementById("name");
+const emailInput=document.getElementById("email");
+const passwordInput=document.getElementById("password");
+const registerButton=document.getElementById("register");
+const loginButton=document.getElementById("login");
+const statusBox=document.getElementById("status");
+const authSection=document.getElementById("authSection");
+const searchSection=document.getElementById("searchSection");
+const searchInput=document.getElementById("searchInput");
+const searchButton=document.getElementById("searchButton");
+const logoutButton=document.getElementById("logoutButton");
+const searchStatus=document.getElementById("searchStatus");
+const results=document.getElementById("results");
+const chatSection=document.getElementById("chatSection");
+const chatTitle=document.getElementById("chatTitle");
+const chatMessages=document.getElementById("chatMessages");
+const messageInput=document.getElementById("messageInput");
+const sendMessageButton=document.getElementById("sendMessageButton");
+const backToSearchButton=document.getElementById("backToSearchButton");
 
-const chatSection = document.getElementById("chatSection");
-const chatTitle = document.getElementById("chatTitle");
-const chatMessages = document.getElementById("chatMessages");
-const messageInput = document.getElementById("messageInput");
-const sendMessageButton = document.getElementById("sendMessageButton");
-const backToSearchButton = document.getElementById("backToSearchButton");
+let currentUser=null;
+let currentChatId=null;
+let currentChatUser=null;
+let messagesUnsubscribe=null;
+let openingChat=false;
 
-let currentUser = null;
-let currentChatId = null;
-let currentChatUser = null;
-let messagesUnsubscribe = null;
-let openingChat = false;
-
-function setStatus(message){
-statusBox.textContent = message;
-}
-
+function setStatus(message){statusBox.textContent=message}
 function setBusy(busy){
-registerButton.disabled = busy;
-loginButton.disabled = busy;
+registerButton.disabled=busy;
+loginButton.disabled=busy;
 }
 
 if(!window.firebase){
 setStatus("Firebase не загрузился. Проверь интернет.");
 throw new Error("Firebase не загрузился");
 }
+if(!firebase.apps.length){firebase.initializeApp(firebaseConfig)}
 
-if(!firebase.apps.length){
-firebase.initializeApp(firebaseConfig);
-}
+const auth=firebase.auth();
+const db=firebase.firestore();
+auth.languageCode="ru";
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-auth.languageCode = "ru";
-
-// Отключение прослушивания сообщений
 function stopMessagesListener(){
 if(messagesUnsubscribe){
 messagesUnsubscribe();
-messagesUnsubscribe = null;
+messagesUnsubscribe=null;
 }
 }
 
-// Сохранение личного и публичного профиля
 async function saveUserProfile(user,name){
-const userName = name || user.displayName || "Пользователь";
-
+const userName=name||user.displayName||"Пользователь";
 try{
 await db.collection("users").doc(user.uid).set({
 uid:user.uid,
@@ -211,251 +152,212 @@ name:userName,
 nameLower:userName.toLowerCase(),
 updatedAt:firebase.firestore.FieldValue.serverTimestamp()
 },{merge:true});
-
 }catch(error){
 console.error("Ошибка сохранения профиля:",error);
 throw error;
 }
 }
 
-// Показ главного экрана
 function showSearchApp(user){
-currentUser = user;
-authSection.style.display = "none";
-searchSection.style.display = "block";
+currentUser=user;
+authSection.style.display="none";
+searchSection.style.display="block";
 }
 
-// Выход из аккаунта
 logoutButton.addEventListener("click",async function(){
 try{
 stopMessagesListener();
 await auth.signOut();
-
-currentUser = null;
-currentChatId = null;
-currentChatUser = null;
-chatSection.style.display = "none";
-searchSection.style.display = "none";
-authSection.style.display = "block";
-
+currentUser=null;
+currentChatId=null;
+currentChatUser=null;
+chatSection.style.display="none";
+searchSection.style.display="none";
+authSection.style.display="block";
 setStatus("Вы вышли из аккаунта.");
-
 }catch(error){
 setStatus("Ошибка выхода: "+error.message);
 }
 });
 
-// Регистрация
 registerButton.addEventListener("click",async function(){
-const name = nameInput.value.trim();
-const email = emailInput.value.trim();
-const password = passwordInput.value;
-
-if(!name || !email || !password){
-setStatus("Заполните все поля.");
-return;
-}
-
-if(password.length < 6){
-setStatus("Пароль должен содержать минимум 6 символов.");
-return;
-}
+const name=nameInput.value.trim();
+const email=emailInput.value.trim();
+const password=passwordInput.value;
+if(!name||!email||!password){setStatus("Заполните все поля.");return}
+if(password.length<6){setStatus("Пароль должен содержать минимум 6 символов.");return}
 
 setBusy(true);
 setStatus("Создаём аккаунт...");
-
 try{
-const result = await auth.createUserWithEmailAndPassword(email,password);
+const result=await auth.createUserWithEmailAndPassword(email,password);
 await result.user.updateProfile({displayName:name});
 await saveUserProfile(result.user,name);
-
 setStatus("Аккаунт создан!");
 showSearchApp(result.user);
-
 }catch(error){
 console.error(error);
 setStatus("Ошибка: "+error.message);
-
-}finally{
-setBusy(false);
-}
+}finally{setBusy(false)}
 });
 
-// Вход
 loginButton.addEventListener("click",async function(){
-const email = emailInput.value.trim();
-const password = passwordInput.value;
-
-if(!email || !password){
-setStatus("Введите email и пароль.");
-return;
-}
+const email=emailInput.value.trim();
+const password=passwordInput.value;
+if(!email||!password){setStatus("Введите email и пароль.");return}
 
 setBusy(true);
 setStatus("Выполняем вход...");
-
 try{
-const result = await auth.signInWithEmailAndPassword(email,password);
+const result=await auth.signInWithEmailAndPassword(email,password);
 await saveUserProfile(result.user,result.user.displayName);
-
 setStatus("Вход выполнен!");
 showSearchApp(result.user);
-
 }catch(error){
 console.error(error);
 setStatus("Ошибка: "+error.message);
-
-}finally{
-setBusy(false);
-}
+}finally{setBusy(false)}
 });
 
-// Форматирование времени сообщения
 function formatMessageTime(timestamp){
-if(!timestamp || !timestamp.toDate) return "";
-
+if(!timestamp||!timestamp.toDate)return "";
 return timestamp.toDate().toLocaleString("ru-RU",{
-hour:"2-digit",
-minute:"2-digit",
-day:"2-digit",
-month:"2-digit"
+hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"
 });
 }
 
-// Отображение истории и новых сообщений
+// Загрузка истории и новых сообщений
 function startMessagesListener(chatId){
 stopMessagesListener();
-
 chatMessages.replaceChildren();
 
-const loading = document.createElement("div");
-loading.style.color = "#9e8cac";
-loading.textContent = "Загружаем сообщения...";
+const loading=document.createElement("div");
+loading.style.color="#9e8cac";
+loading.textContent="Загружаем сообщения...";
 chatMessages.appendChild(loading);
 
-messagesUnsubscribe = db.collection("chats")
+messagesUnsubscribe=db.collection("chats")
 .doc(chatId)
 .collection("messages")
 .orderBy("createdAt","asc")
 .onSnapshot(function(snapshot){
-
 chatMessages.replaceChildren();
 
 if(snapshot.empty){
-const empty = document.createElement("div");
-empty.style.color = "#9e8cac";
-empty.textContent = "Пока нет сообщений. Напиши первым!";
+const empty=document.createElement("div");
+empty.style.color="#9e8cac";
+empty.textContent="Пока нет сообщений. Напиши первым!";
 chatMessages.appendChild(empty);
 return;
 }
 
 snapshot.forEach(function(doc){
-const data = doc.data();
+const data=doc.data();
+const message=document.createElement("div");
+message.className="message";
 
-const message = document.createElement("div");
-message.className = "message";
+const mine=data.senderId===currentUser.uid;
+if(mine)message.classList.add("mine");
 
-const mine = data.senderId === currentUser.uid;
-if(mine) message.classList.add("mine");
+const author=document.createElement("div");
+author.className="message-author";
+author.textContent=mine?"Вы":"Собеседник";
 
-const author = document.createElement("div");
-author.className = "message-author";
-author.textContent = mine ? "Вы" : "Собеседник";
+const messageText=document.createElement("div");
+messageText.textContent=data.text||"";
 
-const messageText = document.createElement("div");
-messageText.textContent = data.text || "";
-
-const time = document.createElement("div");
-time.className = "message-time";
-time.textContent = formatMessageTime(data.createdAt);
+const time=document.createElement("div");
+time.className="message-time";
+time.textContent=formatMessageTime(data.createdAt);
 
 message.appendChild(author);
 message.appendChild(messageText);
 message.appendChild(time);
-
 chatMessages.appendChild(message);
 });
-
-chatMessages.scrollTop = chatMessages.scrollHeight;
+chatMessages.scrollTop=chatMessages.scrollHeight;
 
 },function(error){
 console.error("Ошибка получения сообщений:",error);
-chatMessages.textContent = "Не удалось загрузить сообщения: "+error.message;
+chatMessages.textContent="Ошибка загрузки сообщений. Код: "+error.code;
+searchStatus.style.display="block";
+searchStatus.textContent="Ошибка чтения сообщений: "+error.code+" — "+error.message;
 });
 }
 
-// Открытие личного чата
+// Открытие личного чата с указанием этапа ошибки
 async function openChat(userId,userName){
-if(!currentUser || userId === currentUser.uid || openingChat) return;
+if(!currentUser||userId===currentUser.uid||openingChat)return;
 
-openingChat = true;
+openingChat=true;
 stopMessagesListener();
 
-try{
-searchStatus.textContent = "Открываем чат...";
+let step="Поиск существующего чата";
 
-const snapshot = await db.collection("chats")
+try{
+searchStatus.style.display="block";
+searchStatus.textContent="Открываем чат...";
+
+console.log("Текущий пользователь:",currentUser.uid);
+console.log("Собеседник:",userId);
+
+const snapshot=await db.collection("chats")
 .where("members","array-contains",currentUser.uid)
 .get();
 
-let chatDoc = null;
+let chatDoc=null;
 
 snapshot.forEach(function(doc){
-const members = doc.data().members || [];
-
-if(members.length === 2 && members.includes(userId)){
-chatDoc = doc;
+const members=doc.data().members||[];
+if(members.length===2&&members.includes(userId)){
+chatDoc=doc;
 }
 });
 
 if(!chatDoc){
-const newChat = db.collection("chats").doc();
+step="Создание нового чата";
+const newChat=db.collection("chats").doc();
 
 await newChat.set({
 members:[currentUser.uid,userId],
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 });
 
-chatDoc = await newChat.get();
+currentChatId=newChat.id;
+}else{
+currentChatId=chatDoc.id;
 }
 
-currentChatId = chatDoc.id;
-currentChatUser = userId;
+currentChatUser=userId;
+chatTitle.textContent="Чат с "+userName;
+chatSection.style.display="block";
+searchInput.style.display="none";
+searchButton.style.display="none";
+searchStatus.style.display="none";
+results.style.display="none";
 
-chatTitle.textContent = "Чат с "+userName;
-chatSection.style.display = "block";
-
-searchInput.style.display = "none";
-searchButton.style.display = "none";
-searchStatus.style.display = "none";
-results.style.display = "none";
-
+step="Загрузка сообщений";
 startMessagesListener(currentChatId);
 
 }catch(error){
-console.error("Ошибка открытия чата:",error);
-searchStatus.textContent = "Ошибка открытия чата: "+error.message;
-
+console.error("Ошибка на этапе:",step,error);
+searchStatus.style.display="block";
+searchStatus.textContent="Этап: "+step+". Код: "+error.code+". "+error.message;
 }finally{
-openingChat = false;
+openingChat=false;
 }
 }
 
-// Отправка сообщения
 async function sendMessage(){
-if(!currentUser || !currentChatId) return;
-
-const text = messageInput.value.trim();
-
-if(!text) return;
-
-if(text.length > 4000){
-chatMessages.textContent = "Сообщение слишком длинное.";
+if(!currentUser||!currentChatId)return;
+const text=messageInput.value.trim();
+if(!text)return;
+if(text.length>4000){
+chatMessages.textContent="Сообщение слишком длинное.";
 return;
 }
 
-sendMessageButton.disabled = true;
-
+sendMessageButton.disabled=true;
 try{
 await db.collection("chats")
 .doc(currentChatId)
@@ -465,137 +367,118 @@ senderId:currentUser.uid,
 text:text,
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 });
-
-messageInput.value = "";
-
+messageInput.value="";
 }catch(error){
 console.error("Ошибка отправки:",error);
-alert("Не удалось отправить сообщение: "+error.message);
-
+alert("Не удалось отправить сообщение: "+error.code+" — "+error.message);
 }finally{
-sendMessageButton.disabled = false;
+sendMessageButton.disabled=false;
 messageInput.focus();
 }
 }
 
 sendMessageButton.addEventListener("click",sendMessage);
-
 messageInput.addEventListener("keydown",function(event){
-if(event.key === "Enter"){
+if(event.key==="Enter"){
 event.preventDefault();
 sendMessage();
 }
 });
 
-// Возврат к поиску
 backToSearchButton.addEventListener("click",function(){
 stopMessagesListener();
-
-currentChatId = null;
-currentChatUser = null;
-
-chatSection.style.display = "none";
-searchInput.style.display = "block";
-searchButton.style.display = "block";
-searchStatus.style.display = "block";
-results.style.display = "block";
-
-messageInput.value = "";
+currentChatId=null;
+currentChatUser=null;
+chatSection.style.display="none";
+searchInput.style.display="block";
+searchButton.style.display="block";
+searchStatus.style.display="block";
+results.style.display="block";
+messageInput.value="";
 });
 
-// Поиск пользователей
 searchButton.addEventListener("click",async function(){
-
 if(!currentUser){
-searchStatus.textContent = "Сначала войдите в аккаунт.";
+searchStatus.textContent="Сначала войдите в аккаунт.";
 return;
 }
 
-const searchTerm = searchInput.value.trim().toLowerCase();
-
-if(searchTerm.length < 2){
-searchStatus.textContent = "Введите минимум 2 буквы.";
+const searchTerm=searchInput.value.trim().toLowerCase();
+if(searchTerm.length<2){
+searchStatus.textContent="Введите минимум 2 буквы.";
 results.replaceChildren();
 return;
 }
 
-searchButton.disabled = true;
-searchStatus.textContent = "Ищем пользователей...";
+searchButton.disabled=true;
+searchStatus.textContent="Ищем пользователей...";
 results.replaceChildren();
 
 try{
-const snapshot = await db.collection("publicProfiles")
+const snapshot=await db.collection("publicProfiles")
 .orderBy("nameLower")
 .startAt(searchTerm)
 .endAt(searchTerm+"\uf8ff")
 .limit(20)
 .get();
 
-let found = 0;
-
+let found=0;
 snapshot.forEach(function(doc){
-if(doc.id === currentUser.uid) return;
+if(doc.id===currentUser.uid)return;
+const profile=doc.data();
 
-const profile = doc.data();
+const item=document.createElement("div");
+item.className="user-result";
 
-const item = document.createElement("div");
-item.className = "user-result";
+const userName=document.createElement("div");
+userName.className="user-name";
+userName.textContent=profile.name||"Пользователь";
 
-const userName = document.createElement("div");
-userName.className = "user-name";
-userName.textContent = profile.name || "Пользователь";
-
-const caption = document.createElement("div");
-caption.className = "user-caption";
-caption.textContent = "Пользователь YOR 2";
+const caption=document.createElement("div");
+caption.className="user-caption";
+caption.textContent="Пользователь YOR 2";
 
 item.addEventListener("click",function(){
-openChat(profile.uid,profile.name || "Пользователь");
+openChat(profile.uid,profile.name||"Пользователь");
 });
 
 item.appendChild(userName);
 item.appendChild(caption);
 results.appendChild(item);
-
 found++;
 });
 
-if(found === 0){
-searchStatus.textContent = "Пользователи не найдены.";
+if(found===0){
+searchStatus.textContent="Пользователи не найдены.";
 }else{
-searchStatus.textContent = "Найдено пользователей: "+found;
+searchStatus.textContent="Найдено пользователей: "+found;
 }
-
 }catch(error){
 console.error("Ошибка поиска:",error);
-searchStatus.textContent = "Ошибка поиска: "+error.message;
-
+searchStatus.textContent="Ошибка поиска: "+error.code+" — "+error.message;
 }finally{
-searchButton.disabled = false;
+searchButton.disabled=false;
 }
 });
 
-// Восстановление входа после обновления страницы
 auth.onAuthStateChanged(async function(user){
-
 stopMessagesListener();
-currentChatId = null;
-currentChatUser = null;
+currentChatId=null;
+currentChatUser=null;
 
 if(user){
 try{
 await saveUserProfile(user,user.displayName);
 showSearchApp(user);
-
 }catch(error){
 console.error(error);
 setStatus("Ошибка обновления профиля: "+error.message);
 }
 }else{
-currentUser = null;
-searchSection.style.display = "none";
-chatSection.style.display = "none";
-authSection.style.display = "block";
+currentUser=null;
+searchSection.style.display="none";
+chatSection.style.display="none";
+authSection.style.display="block";
 }
 });
 </script>
