@@ -5,16 +5,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090611">
-<title>YOR 2 — Регистрация и вход</title>
+<title>YOR 2</title>
+
 <style>
 *{box-sizing:border-box}
 body{
-margin:0;min-height:100vh;display:grid;place-items:center;
-padding:24px;background:radial-gradient(circle at top,#291044 0,#10091b 42%,#07060b 100%);
-color:#fff;font-family:Arial,sans-serif
+margin:0;min-height:100vh;padding:24px;
+display:grid;place-items:center;
+background:radial-gradient(circle at top,#291044 0,#10091b 42%,#07060b 100%);
+color:white;font-family:Arial,sans-serif
 }
 .card{
-width:min(100%,390px);padding:28px 22px;
+width:min(100%,420px);padding:28px 22px;
 border:1px solid #7138a6;border-radius:24px;
 background:#120d1def;box-shadow:0 0 30px #8b35d455
 }
@@ -33,31 +35,58 @@ border-radius:12px;background:linear-gradient(90deg,#7b2bd1,#b04cff);
 color:white;font-size:16px;font-weight:bold;cursor:pointer
 }
 button:disabled{opacity:.5}
-#status{min-height:44px;margin-top:16px;color:#d9c5ed;line-height:1.4;font-size:14px}
+#status,#searchStatus{
+min-height:30px;margin-top:16px;color:#d9c5ed;
+line-height:1.4;font-size:14px
+}
 .hint{font-size:12px;color:#9e8cac;line-height:1.4;margin-top:12px}
+#searchSection{display:none;margin-top:24px}
+.user-result{
+padding:14px;margin-top:10px;border:1px solid #69418a;
+border-radius:12px;background:#090611
+}
+.user-name{font-weight:bold;color:#d9aaff;font-size:17px}
+.user-caption{font-size:12px;color:#9e8cac;margin-top:5px}
 </style>
 </head>
+
 <body>
 <main class="card">
-<h1>YOR 2</h1>
-<div class="sub">Регистрация и вход по email</div>
 
+<h1>YOR 2</h1>
+<div class="sub">Твой мессенджер</div>
+
+<section id="authSection">
 <label for="name">Имя</label>
-<input id="name" type="text" placeholder="Как вас зовут" autocomplete="name">
+<input id="name" type="text" placeholder="Как вас зовут">
 
 <label for="email">Email</label>
-<input id="email" type="email" placeholder="name@example.com" autocomplete="email">
+<input id="email" type="email" placeholder="name@example.com">
 
 <label for="password">Пароль</label>
-<input id="password" type="password" placeholder="Не менее 6 символов" autocomplete="current-password">
+<input id="password" type="password" placeholder="Не менее 6 символов">
 
 <button id="register" type="button">Создать аккаунт</button>
 <button id="login" type="button">Войти</button>
 
-<div id="status" role="status" aria-live="polite">Введите имя, email и пароль.</div>
-<div class="hint">
-Для регистрации укажите имя, действующий email и пароль не менее 6 символов.
-</div>
+<div id="status">Введите имя, email и пароль.</div>
+</section>
+
+<section id="searchSection">
+<h2 style="color:#c58cff">Поиск пользователей</h2>
+
+<label for="searchInput">Имя пользователя</label>
+<input id="searchInput" type="text"
+placeholder="Введите имя для поиска">
+
+<button id="searchButton" type="button">Найти пользователя</button>
+
+<div id="searchStatus">Ищи пользователей YOR 2 по имени.</div>
+<div id="results"></div>
+</section>
+
+<div class="hint">YOR 2 — общение без границ.</div>
+
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -81,22 +110,28 @@ const passwordInput = document.getElementById("password");
 const registerButton = document.getElementById("register");
 const loginButton = document.getElementById("login");
 const statusBox = document.getElementById("status");
+const authSection = document.getElementById("authSection");
+const searchSection = document.getElementById("searchSection");
+const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
+const searchStatus = document.getElementById("searchStatus");
+const results = document.getElementById("results");
 
-function setStatus(message) {
+function setStatus(message){
 statusBox.textContent = message;
 }
 
-function setBusy(busy) {
+function setBusy(busy){
 registerButton.disabled = busy;
 loginButton.disabled = busy;
 }
 
-if (!window.firebase) {
-setStatus("Firebase не загрузился. Проверьте интернет.");
+if(!window.firebase){
+setStatus("Firebase не загрузился. Проверь интернет.");
 throw new Error("Firebase не загрузился");
 }
 
-if (!firebase.apps.length) {
+if(!firebase.apps.length){
 firebase.initializeApp(firebaseConfig);
 }
 
@@ -104,48 +139,56 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 auth.languageCode = "ru";
 
+let currentUser = null;
+
 // Сохранение личного и публичного профиля
-async function saveUserProfile(user, name) {
-  const userName = name || user.displayName || "Пользователь";
+async function saveUserProfile(user,name){
+const userName = name || user.displayName || "Пользователь";
 
-  try {
-    await db.collection("users").doc(user.uid).set({
-      uid: user.uid,
-      name: userName,
-      email: user.email,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, {merge: true});
-  } catch (error) {
-    console.error("Ошибка сохранения users:", error);
-    throw new Error("Не удалось сохранить личный профиль: " + error.message);
-  }
+try{
+await db.collection("users").doc(user.uid).set({
+uid:user.uid,
+name:userName,
+email:user.email,
+updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+},{merge:true});
+}catch(error){
+console.error("Ошибка users:",error);
+throw new Error("Ошибка личного профиля: "+error.message);
+}
 
-  try {
-    await db.collection("publicProfiles").doc(user.uid).set({
-      uid: user.uid,
-      name: userName,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, {merge: true});
-  } catch (error) {
-    console.error("Ошибка сохранения publicProfiles:", error);
-    throw new Error("Не удалось создать публичный профиль: " + error.message);
-  }
+try{
+await db.collection("publicProfiles").doc(user.uid).set({
+uid:user.uid,
+name:userName,
+nameLower:userName.toLowerCase(),
+updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+},{merge:true});
+}catch(error){
+console.error("Ошибка publicProfiles:",error);
+throw new Error("Ошибка публичного профиля: "+error.message);
+}
+}
 
-  return true;
+// Показ главного экрана
+function showSearchApp(user){
+currentUser = user;
+authSection.style.display = "none";
+searchSection.style.display = "block";
 }
 
 // Регистрация
-registerButton.addEventListener("click", async function() {
+registerButton.addEventListener("click",async function(){
 const name = nameInput.value.trim();
 const email = emailInput.value.trim();
 const password = passwordInput.value;
 
-if (!name || !email || !password) {
-setStatus("Заполните имя, email и пароль.");
+if(!name || !email || !password){
+setStatus("Заполните все поля.");
 return;
 }
 
-if (password.length < 6) {
+if(password.length < 6){
 setStatus("Пароль должен содержать минимум 6 символов.");
 return;
 }
@@ -153,29 +196,27 @@ return;
 setBusy(true);
 setStatus("Создаём аккаунт...");
 
-try {
-const result = await auth.createUserWithEmailAndPassword(email, password);
-await result.user.updateProfile({displayName: name});
+try{
+const result = await auth.createUserWithEmailAndPassword(email,password);
+await result.user.updateProfile({displayName:name});
+await saveUserProfile(result.user,name);
 
-setStatus("Аккаунт создан. Сохраняем профили...");
-
-await saveUserProfile(result.user, name);
-
-setStatus("Ура! Аккаунт создан. Личный и публичный профили сохранены!");
-} catch (error) {
+setStatus("Аккаунт создан!");
+showSearchApp(result.user);
+}catch(error){
 console.error(error);
-setStatus("Ошибка: " + error.message);
-} finally {
+setStatus("Ошибка: "+error.message);
+}finally{
 setBusy(false);
 }
 });
 
 // Вход
-loginButton.addEventListener("click", async function() {
+loginButton.addEventListener("click",async function(){
 const email = emailInput.value.trim();
 const password = passwordInput.value;
 
-if (!email || !password) {
+if(!email || !password){
 setStatus("Введите email и пароль.");
 return;
 }
@@ -183,19 +224,97 @@ return;
 setBusy(true);
 setStatus("Выполняем вход...");
 
-try {
-const result = await auth.signInWithEmailAndPassword(email, password);
+try{
+const result = await auth.signInWithEmailAndPassword(email,password);
+await saveUserProfile(result.user,result.user.displayName);
 
-setStatus("Вход выполнен. Проверяем профили...");
-
-await saveUserProfile(result.user, result.user.displayName);
-
-setStatus("Вы успешно вошли в YOR 2! Профили сохранены.");
-} catch (error) {
+setStatus("Вход выполнен!");
+showSearchApp(result.user);
+}catch(error){
 console.error(error);
-setStatus("Ошибка: " + error.message);
-} finally {
+setStatus("Ошибка: "+error.message);
+}finally{
 setBusy(false);
+}
+});
+
+// Поиск пользователей
+searchButton.addEventListener("click",async function(){
+
+if(!currentUser){
+searchStatus.textContent = "Сначала войдите в аккаунт.";
+return;
+}
+
+const searchTerm = searchInput.value.trim().toLowerCase();
+
+if(searchTerm.length < 2){
+searchStatus.textContent = "Введите минимум 2 буквы.";
+results.replaceChildren();
+return;
+}
+
+searchButton.disabled = true;
+searchStatus.textContent = "Ищем пользователей...";
+results.replaceChildren();
+
+try{
+const snapshot = await db.collection("publicProfiles")
+.orderBy("nameLower")
+.startAt(searchTerm)
+.endAt(searchTerm+"\uf8ff")
+.limit(20)
+.get();
+
+let found = 0;
+
+snapshot.forEach(function(doc){
+if(doc.id === currentUser.uid) return;
+
+const profile = doc.data();
+
+const item = document.createElement("div");
+item.className = "user-result";
+
+const userName = document.createElement("div");
+userName.className = "user-name";
+userName.textContent = profile.name || "Пользователь";
+
+const caption = document.createElement("div");
+caption.className = "user-caption";
+caption.textContent = "Пользователь YOR 2";
+
+item.appendChild(userName);
+item.appendChild(caption);
+results.appendChild(item);
+
+found++;
+});
+
+if(found === 0){
+searchStatus.textContent = "Пользователи не найдены.";
+}else{
+searchStatus.textContent = "Найдено пользователей: "+found;
+}
+
+}catch(error){
+console.error("Ошибка поиска:",error);
+searchStatus.textContent = "Ошибка поиска: "+error.message;
+}finally{
+searchButton.disabled = false;
+}
+});
+
+// Восстановление экрана после обновления страницы
+auth.onAuthStateChanged(async function(user){
+if(user){
+try {
+await saveUserProfile(user,user.displayName);
+showSearchApp(user);
+} catch(error) {
+console.error(error);
+setStatus("Ошибка обновления профиля: "+error.message);
+}
 }
 });
 </script>
