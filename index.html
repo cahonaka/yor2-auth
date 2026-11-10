@@ -83,6 +83,20 @@ placeholder="Введите имя для поиска">
 
 <div id="searchStatus">Ищи пользователей YOR 2 по имени.</div>
 <div id="results"></div>
+  
+<div id="chatSection" style="display:none;margin-top:24px">
+  <h2 id="chatTitle" style="color:#c58cff">Личный чат</h2>
+
+  <div id="chatMessages" style="height:300px;overflow-y:auto;border:1px solid #69418a;border-radius:12px;padding:12px;background:#090611">
+    <div style="color:#9e8cac">История сообщений будет здесь.</div>
+  </div>
+
+  <input id="messageInput" type="text" placeholder="Напиши сообщение...">
+
+  <button id="sendMessageButton" type="button">Отправить</button>
+  <button id="backToSearchButton" type="button">Назад к поиску</button>
+</div>
+
 </section>
 
 <div class="hint">YOR 2 — общение без границ.</div>
@@ -117,6 +131,17 @@ const searchButton = document.getElementById("searchButton");
 const logoutButton = document.getElementById("logoutButton"); 
 const searchStatus = document.getElementById("searchStatus");
 const results = document.getElementById("results");
+const chatSection = document.getElementById("chatSection");
+const chatTitle = document.getElementById("chatTitle");
+const chatMessages = document.getElementById("chatMessages");
+const messageInput = document.getElementById("messageInput");
+const sendMessageButton = document.getElementById("sendMessageButton");
+const backToSearchButton = document.getElementById("backToSearchButton");
+let currentChatId = null;
+let currentChatUser = null;
+
+let currentChatId = null;
+let currentChatUser = null;
 
 function setStatus(message){
 statusBox.textContent = message;
@@ -249,7 +274,48 @@ setStatus("Ошибка: "+error.message);
 setBusy(false);
 }
 });
+// Открытие личного чата
+async function openChat(userId, userName) {
+  try {
+    const snapshot = await db.collection("chats")
+      .where("members", "array-contains", currentUser.uid)
+      .get();
 
+    let chatDoc = null;
+
+    snapshot.forEach(function(doc) {
+      const members = doc.data().members || [];
+
+      if (members.length === 2 && members.includes(userId)) {
+        chatDoc = doc;
+      }
+    });
+
+    if (!chatDoc) {
+      chatDoc = db.collection("chats").doc();
+
+      await chatDoc.set({
+        members: [currentUser.uid, userId],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    currentChatId = chatDoc.id;
+    currentChatUser = userId;
+
+    chatTitle.textContent = "Чат с " + userName;
+    chatSection.style.display = "block";
+
+    searchInput.style.display = "none";
+    searchButton.style.display = "none";
+    searchStatus.style.display = "none";
+    results.style.display = "none";
+
+  } catch(error) {
+    console.error(error);
+    searchStatus.textContent = "Ошибка открытия чата: " + error.message;
+  }
+}
 // Поиск пользователей
 searchButton.addEventListener("click",async function(){
 
