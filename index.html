@@ -74,7 +74,7 @@ border-radius:12px;background:#090611
 
 <section id="searchSection">
 <h2 style="color:#c58cff">Поиск пользователей</h2>
-
+<button id="logoutButton" type="button">Выйти из аккаунта</button>
 <label for="searchInput">Имя пользователя</label>
 <input id="searchInput" type="text"
 placeholder="Введите имя для поиска">
@@ -114,6 +114,7 @@ const authSection = document.getElementById("authSection");
 const searchSection = document.getElementById("searchSection");
 const searchInput = document.getElementById("searchInput");
 const searchButton = document.getElementById("searchButton");
+const logoutButton = document.getElementById("logoutButton"); 
 const searchStatus = document.getElementById("searchStatus");
 const results = document.getElementById("results");
 
@@ -176,7 +177,18 @@ currentUser = user;
 authSection.style.display = "none";
 searchSection.style.display = "block";
 }
-
+// Выход из аккаунта
+logoutButton.addEventListener("click",async function(){
+try{
+await auth.signOut();
+currentUser = null;
+searchSection.style.display = "none";
+authSection.style.display = "block";
+setStatus("Вы вышли из аккаунта.");
+}catch(error){
+setStatus("Ошибка выхода: "+error.message);
+}
+});
 // Регистрация
 registerButton.addEventListener("click",async function(){
 const name = nameInput.value.trim();
