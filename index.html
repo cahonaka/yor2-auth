@@ -40,7 +40,30 @@ button:disabled{opacity:.5}
 }
 .hint{font-size:12px;color:#9e8cac;line-height:1.4;margin-top:18px}
 #searchSection{display:none;margin-top:12px}
-.top-actions{display:flex;justify-content:flex-end;margin-bottom:12px}
+.top-actions{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:10px;margin-bottom:18px;
+}
+.profile-open{
+ display:flex;align-items:center;gap:10px;
+ min-width:0;padding:5px 10px 5px 5px;
+ background:transparent;border:1px solid #69418a;
+ border-radius:30px;text-align:left;
+}
+.profile-open:active{opacity:.8}
+.header-avatar{
+ width:42px;height:42px;flex-shrink:0;
+ display:flex;align-items:center;justify-content:center;
+ border-radius:50%;
+ background:linear-gradient(135deg,#7138a6,#b04cff);
+ border:2px solid #c58cff;
+ color:white;font-size:18px;font-weight:bold;
+}
+.header-name{
+ color:#e7d8f5;font-size:15px;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ max-width:180px;
+}
 .small-button{width:auto;padding:9px 15px;font-size:13px}
 .search-row{display:flex;align-items:center;gap:8px}
 .search-row input{min-width:0;flex:1;padding:11px;font-size:14px}
@@ -96,11 +119,46 @@ button:disabled{opacity:.5}
 #messageInput{margin-top:12px}
 .chat-actions{display:flex;gap:8px}
 .chat-actions button{flex:1;padding:12px 8px;margin-top:10px;font-size:14px}
+
+/* Профиль */
+#profileSection{display:none;margin-top:12px}
+.profile-card{
+ padding:22px 16px;border:1px solid #69418a;
+ border-radius:18px;background:#090611;text-align:center;
+}
+.profile-big-avatar{
+ width:92px;height:92px;margin:5px auto 15px;
+ display:flex;align-items:center;justify-content:center;
+ border-radius:50%;
+ background:linear-gradient(135deg,#7138a6,#b04cff);
+ border:3px solid #c58cff;
+ color:white;font-size:38px;font-weight:bold;
+ box-shadow:0 0 22px #8b35d455;
+}
+.profile-display-name{
+ color:#e7d8f5;font-size:21px;font-weight:bold;
+ overflow-wrap:anywhere;
+}
+.profile-email{
+ color:#a995b8;font-size:13px;margin-top:8px;
+ overflow-wrap:anywhere;
+}
+.profile-form{text-align:left;margin-top:20px}
+.profile-buttons{display:flex;gap:8px;margin-top:14px}
+.profile-buttons button{flex:1;padding:12px 8px;font-size:14px}
+.secondary-button{
+ background:#30203f;border:1px solid #69418a;
+}
+#profileStatus{
+ min-height:20px;margin-top:12px;
+ color:#d9c5ed;font-size:13px;overflow-wrap:anywhere;
+}
 @media(max-width:380px){
  body{padding:8px}
  .card{padding:18px 13px}
  .search-row{gap:5px}
  .search-row button{padding:10px 9px}
+ .header-name{max-width:125px}
 }
 </style>
 </head>
@@ -124,35 +182,64 @@ button:disabled{opacity:.5}
 </section>
 
 <section id="searchSection">
+
 <div class="top-actions">
+<button class="profile-open" id="profileOpenButton" type="button">
+ <span class="header-avatar" id="headerAvatar">П</span>
+ <span class="header-name" id="headerName">Пользователь</span>
+</button>
 <button class="small-button" id="logoutButton" type="button">Выход</button>
 </div>
 
-<div class="search-row">
-<input id="searchInput" type="text" placeholder="Поиск пользователя">
-<button id="searchButton" type="button">Найти</button>
+<div id="mainChatsView">
+ <div class="search-row">
+  <input id="searchInput" type="text" placeholder="Поиск пользователя">
+  <button id="searchButton" type="button">Найти</button>
+ </div>
+
+ <div id="searchStatus"></div>
+ <div id="results"></div>
+
+ <h2 class="section-title" id="chatsHeading">Чаты</h2>
+
+ <div id="chatList">
+  <div style="color:#9e8cac;padding:15px">Загружаем чаты...</div>
+ </div>
 </div>
 
-<div id="searchStatus"></div>
-<div id="results"></div>
+<section id="profileSection">
+ <h2 class="section-title">Мой профиль</h2>
 
-<h2 class="section-title" id="chatsHeading">Чаты</h2>
+ <div class="profile-card">
+  <div class="profile-big-avatar" id="profileBigAvatar">П</div>
+  <div class="profile-display-name" id="profileDisplayName">Пользователь</div>
+  <div class="profile-email" id="profileEmail"></div>
 
-<div id="chatList">
-<div style="color:#9e8cac;padding:15px">Загружаем чаты...</div>
-</div>
+  <div class="profile-form">
+   <label for="profileNameInput">Изменить имя</label>
+   <input id="profileNameInput" type="text" maxlength="40" placeholder="Введите новое имя">
+
+   <div class="profile-buttons">
+    <button id="saveProfileButton" type="button">Сохранить</button>
+    <button class="secondary-button" id="closeProfileButton" type="button">Назад</button>
+   </div>
+   <div id="profileStatus"></div>
+  </div>
+ </div>
+</section>
 
 <div id="chatSection">
-<h2 id="chatTitle" class="section-title">Личный чат</h2>
-<div id="chatMessages">
-<div style="color:#9e8cac">Загружаем историю сообщений...</div>
+ <h2 id="chatTitle" class="section-title">Личный чат</h2>
+ <div id="chatMessages">
+  <div style="color:#9e8cac">Загружаем историю сообщений...</div>
+ </div>
+ <input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
+ <div class="chat-actions">
+  <button id="sendMessageButton" type="button">Отправить</button>
+  <button id="backToSearchButton" type="button">Назад</button>
+ </div>
 </div>
-<input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
-<div class="chat-actions">
-<button id="sendMessageButton" type="button">Отправить</button>
-<button id="backToSearchButton" type="button">Назад</button>
-</div>
-</div>
+
 </section>
 
 <div class="hint">YOR 2 — общение без границ.</div>
@@ -197,14 +284,70 @@ const sendMessageButton=$("sendMessageButton");
 const backToSearchButton=$("backToSearchButton");
 const chatsHeading=$("chatsHeading");
 
+const profileOpenButton=$("profileOpenButton");
+const headerAvatar=$("headerAvatar");
+const headerName=$("headerName");
+const mainChatsView=$("mainChatsView");
+const profileSection=$("profileSection");
+const profileBigAvatar=$("profileBigAvatar");
+const profileDisplayName=$("profileDisplayName");
+const profileEmail=$("profileEmail");
+const profileNameInput=$("profileNameInput");
+const saveProfileButton=$("saveProfileButton");
+const closeProfileButton=$("closeProfileButton");
+const profileStatus=$("profileStatus");
+
 let currentUser=null;
 let currentChatId=null;
 let messagesUnsubscribe=null;
 let chatsUnsubscribe=null;
 let openingChat=false;
+let currentProfileName="";
 
 function setStatus(message){
  statusBox.textContent=message;
+}
+
+function getInitial(name){
+ const value=(name||"Пользователь").trim();
+ return value ? value.charAt(0).toUpperCase() : "П";
+}
+
+/* Обновление шапки и аватара */
+function updateProfileHeader(name){
+ const userName=name||"Пользователь";
+ const initial=getInitial(userName);
+
+ headerName.textContent=userName;
+ headerAvatar.textContent=initial;
+ profileBigAvatar.textContent=initial;
+ profileDisplayName.textContent=userName;
+
+ if(currentUser){
+  profileEmail.textContent=currentUser.email||"";
+ }
+}
+
+/* Сохранение профиля пользователя */
+async function saveUserProfile(user,name){
+ const userName=(name||user.displayName||"Пользователь").trim();
+
+ await db.collection("users").doc(user.uid).set({
+  uid:user.uid,
+  name:userName,
+  email:user.email,
+  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+ },{merge:true});
+
+ await db.collection("publicProfiles").doc(user.uid).set({
+  uid:user.uid,
+  name:userName,
+  nameLower:userName.toLowerCase(),
+  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+ },{merge:true});
+
+ currentProfileName=userName;
+ updateProfileHeader(userName);
 }
 
 function stopMessagesListener(){
@@ -234,32 +377,70 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 auth.languageCode="ru";
 
-async function saveUserProfile(user,name){
- const userName=name || user.displayName || "Пользователь";
-
- await db.collection("users").doc(user.uid).set({
-  uid:user.uid,
-  name:userName,
-  email:user.email,
-  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
- },{merge:true});
-
- await db.collection("publicProfiles").doc(user.uid).set({
-  uid:user.uid,
-  name:userName,
-  nameLower:userName.toLowerCase(),
-  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
- },{merge:true});
-}
-
+/* Показ основного экрана */
 function showSearchApp(user){
  currentUser=user;
  authSection.style.display="none";
  searchSection.style.display="block";
+ mainChatsView.style.display="block";
+ profileSection.style.display="none";
  chatSection.style.display="none";
+ document.querySelector(".top-actions").style.display="flex";
+ updateProfileHeader(currentProfileName||user.displayName);
  chatList.style.display="block";
  startChatsListener();
 }
+
+/* Открыть профиль */
+profileOpenButton.addEventListener("click",()=>{
+ if(!currentUser) return;
+
+ mainChatsView.style.display="none";
+ chatSection.style.display="none";
+ profileSection.style.display="block";
+ profileStatus.textContent="";
+ profileNameInput.value=currentProfileName||currentUser.displayName||"";
+ updateProfileHeader(currentProfileName||currentUser.displayName);
+});
+
+/* Закрыть профиль */
+closeProfileButton.addEventListener("click",()=>{
+ profileSection.style.display="none";
+ mainChatsView.style.display="block";
+});
+
+/* Сохранить новое имя */
+saveProfileButton.addEventListener("click",async()=>{
+ if(!currentUser) return;
+
+ const newName=profileNameInput.value.trim();
+
+ if(newName.length<2){
+  profileStatus.textContent="Имя должно содержать минимум 2 символа.";
+  return;
+ }
+
+ if(newName.length>40){
+  profileStatus.textContent="Имя не должно быть длиннее 40 символов.";
+  return;
+ }
+
+ saveProfileButton.disabled=true;
+ profileStatus.textContent="Сохраняем профиль...";
+
+ try{
+  await currentUser.updateProfile({displayName:newName});
+  await saveUserProfile(currentUser,newName);
+
+  profileStatus.textContent="Имя успешно обновлено!";
+ }catch(error){
+  console.error("Ошибка сохранения профиля:",error);
+  profileStatus.textContent=
+   "Ошибка сохранения: "+error.code+" — "+error.message;
+ }finally{
+  saveProfileButton.disabled=false;
+ }
+});
 
 function formatMessageTime(timestamp){
  if(!timestamp || !timestamp.toDate) return "";
@@ -269,6 +450,7 @@ function formatMessageTime(timestamp){
  });
 }
 
+/* Регистрация */
 registerButton.addEventListener("click",async()=>{
  const name=nameInput.value.trim();
  const email=emailInput.value.trim();
@@ -301,6 +483,7 @@ registerButton.addEventListener("click",async()=>{
  }
 });
 
+/* Вход */
 loginButton.addEventListener("click",async()=>{
  const email=emailInput.value.trim();
  const password=passwordInput.value;
@@ -327,6 +510,7 @@ loginButton.addEventListener("click",async()=>{
  }
 });
 
+/* Выход */
 logoutButton.addEventListener("click",async()=>{
  try{
   stopMessagesListener();
@@ -334,7 +518,9 @@ logoutButton.addEventListener("click",async()=>{
   await auth.signOut();
   currentUser=null;
   currentChatId=null;
+  currentProfileName="";
   chatSection.style.display="none";
+  profileSection.style.display="none";
   searchSection.style.display="none";
   authSection.style.display="block";
   setStatus("Вы вышли из аккаунта.");
@@ -376,7 +562,6 @@ function startChatsListener(){
      let time=data.lastMessageAt||data.createdAt||null;
      let lastSender=data.lastSenderId||null;
 
-     /* Ошибка одного профиля не ломает весь список */
      try{
       const profileDoc=await db.collection("publicProfiles").doc(otherId).get();
       if(profileDoc.exists){
@@ -389,7 +574,6 @@ function startChatsListener(){
      if(data.lastMessage){
       preview=data.lastMessage;
      }else{
-      /* Ошибка чтения истории тоже не ломает остальные чаты */
       try{
        const lastSnapshot=await db.collection("chats")
         .doc(doc.id).collection("messages")
@@ -446,7 +630,7 @@ function startChatsListener(){
 
     const avatar=document.createElement("div");
     avatar.className="chat-avatar";
-    avatar.textContent=(item.name||"П").charAt(0).toUpperCase();
+    avatar.textContent=getInitial(item.name);
 
     const info=document.createElement("div");
     info.className="chat-info";
@@ -519,13 +703,9 @@ async function openChat(userId,userName){
 
   currentChatId=chatId;
   chatTitle.textContent="Чат с "+userName;
+  profileSection.style.display="none";
+  mainChatsView.style.display="none";
   chatSection.style.display="block";
-  chatList.style.display="none";
-  searchInput.style.display="none";
-  searchButton.style.display="none";
-  searchStatus.style.display="none";
-  results.style.display="none";
-  chatsHeading.style.display="none";
   document.querySelector(".top-actions").style.display="none";
 
   startMessagesListener(chatId);
@@ -632,12 +812,7 @@ backToSearchButton.addEventListener("click",()=>{
  currentChatId=null;
 
  chatSection.style.display="none";
- chatList.style.display="block";
- searchInput.style.display="block";
- searchButton.style.display="block";
- searchStatus.style.display="block";
- results.style.display="block";
- chatsHeading.style.display="block";
+ mainChatsView.style.display="block";
  document.querySelector(".top-actions").style.display="flex";
  messageInput.value="";
 });
@@ -723,8 +898,10 @@ auth.onAuthStateChanged(async user=>{
   }
  }else{
   currentUser=null;
+  currentProfileName="";
   searchSection.style.display="none";
   chatSection.style.display="none";
+  profileSection.style.display="none";
   authSection.style.display="block";
  }
 });
