@@ -64,7 +64,7 @@ button.primary{
  color:#d9c5ed;font-size:13px;line-height:1.5;
  margin-top:12px;overflow-wrap:anywhere;min-height:20px;
 }
-#searchSection{display:none;min-height:100dvh;padding-bottom:82px}
+#searchSection{display:none;min-height:100dvh;padding-bottom:65px}
 .app-header{
  height:74px;display:flex;align-items:center;
  justify-content:space-between;padding:10px 17px;
@@ -89,12 +89,17 @@ button.primary{
 .icon-button{
  width:40px;height:40px;border-radius:50%;
  border:1px solid #69418a;background:#1c122b;color:#e8caff;
- font-size:18px;
+ font-size:22px;
 }
 .page{padding:18px 15px;max-width:650px;margin:auto}
 .page-title{font-size:25px;margin:4px 0 5px}
 .page-subtitle{font-size:13px;color:var(--muted);margin-bottom:18px}
 .search-row{display:flex;gap:8px}
+#searchPanel{
+ display:none;margin:0 0 14px;padding:12px;
+ border:1px solid var(--line);border-radius:15px;background:var(--panel)
+}
+#searchPanel.open{display:block}
 .search-row input{min-width:0;flex:1}
 .search-row button{padding:0 17px}
 .section-title{font-size:17px;margin:24px 0 12px;color:#e8caff}
@@ -111,7 +116,7 @@ button.primary{
 #chatList{
  display:flex;flex-direction:column;
  border:1px solid var(--line);border-radius:18px;
- overflow:hidden;background:#100b19;min-height:150px;
+ overflow:hidden;background:#100b19;min-height:100px;
 }
 .chat-item{
  display:flex;align-items:center;gap:12px;
@@ -131,16 +136,16 @@ button.primary{
 .bottom-nav{
  position:fixed;bottom:0;left:0;right:0;z-index:10;
  display:flex;justify-content:space-around;
- padding:9px 5px calc(9px + env(safe-area-inset-bottom));
+ padding:5px 5px calc(5px + env(safe-area-inset-bottom));
  background:#10091bf5;border-top:1px solid #49305e;
  backdrop-filter:blur(15px);
 }
 .nav-button{
  flex:1;display:flex;flex-direction:column;align-items:center;
- gap:4px;background:none;border:0;color:#9885aa;
- font-size:10px;padding:4px 0;
+ gap:2px;background:none;border:0;color:#9885aa;
+ font-size:9px;padding:2px 0;
 }
-.nav-button .nav-icon{font-size:21px}
+.nav-button .nav-icon{font-size:18px}
 .nav-button.active{color:#d7a3ff;text-shadow:0 0 12px #b04cff}
 #chatSection{display:none;min-height:calc(100dvh - 74px);padding-bottom:15px}
 .chat-top{
@@ -194,7 +199,6 @@ button.primary{
  line-height:1.7;
 }
 #otherSection{display:none}
-.hint{text-align:center;color:#776687;font-size:11px;padding:18px}
 @media(min-width:700px){
  #searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}
 }
@@ -231,23 +235,25 @@ button.primary{
    </div>
   </div>
   <div class="header-actions">
+   <button class="icon-button" id="searchOpenButton" type="button" title="Поиск пользователей">⌕</button>
    <button class="icon-button" id="profileOpenButton" type="button" title="Профиль">☻</button>
-   <button class="icon-button" id="logoutButton" type="button" title="Выход">⇥</button>
   </div>
  </header>
 
  <main class="page" id="mainChatsView">
   <h1 class="page-title">Сообщения</h1>
-  <div class="page-subtitle">Твои личные и групповые разговоры</div>
+  <div class="page-subtitle">Твои личные разговоры</div>
 
-  <div class="search-row">
-   <input id="searchInput" type="text" placeholder="Найти пользователя">
-   <button class="primary" id="searchButton" type="button">Найти</button>
+  <div id="searchPanel">
+   <div class="search-row">
+    <input id="searchInput" type="text" placeholder="Найти пользователя">
+    <button class="primary" id="searchButton" type="button">Найти</button>
+   </div>
+   <div id="searchStatus"></div>
+   <div id="results"></div>
   </div>
-  <div id="searchStatus"></div>
-  <div id="results"></div>
 
-  <h2 class="section-title" id="chatsHeading">Последние чаты</h2>
+  <h2 class="section-title">Последние чаты</h2>
   <div id="chatList">
    <div class="empty-state">Загружаем чаты...</div>
   </div>
@@ -267,6 +273,7 @@ button.primary{
      <button class="primary" id="saveProfileButton" type="button">Сохранить</button>
      <button class="primary secondary-button" id="closeProfileButton" type="button">Назад</button>
     </div>
+    <button class="primary secondary-button auth-button" id="logoutButton" type="button">Выйти из аккаунта</button>
     <div id="profileStatus"></div>
    </div>
   </div>
@@ -309,7 +316,7 @@ button.primary{
    <span class="nav-icon">☎</span><span>Звонки</span>
   </button>
   <button class="nav-button" data-page="settings" type="button">
-   <span class="nav-icon">⚙</span><span>Настройки</span>
+   <span class="nav-icon">☻</span><span>Профиль</span>
   </button>
  </nav>
 </section>
@@ -338,6 +345,7 @@ let chatsUnsubscribe=null;
 let openingChat=false;
 let currentProfileName="";
 let currentPage="chats";
+let searchPanelOpen=false;
 
 if(!window.firebase){
  $("status").textContent="Firebase не загрузился. Проверь интернет.";
@@ -410,13 +418,14 @@ function showPage(page){
   $("profileSection").style.display="block";
   $("profileStatus").textContent="";
   $("profileNameInput").value=currentProfileName||currentUser?.displayName||"";
+  $("profileEmail").textContent=currentUser?.email||"";
   updateProfileHeader(currentProfileName);
  }else{
   $("otherSection").style.display="block";
   $("otherTitle").textContent=page==="contacts"?"Контакты":"Звонки";
   $("otherText").textContent=page==="contacts"
    ?"Ищи пользователей через поиск на вкладке «Чаты», чтобы начать общение."
-   :"Голосовые и видеозвонки появятся в одном из следующих обновлений.";
+   :"Голосовые и видеозвонки появятся в следующих обновлениях.";
  }
 }
 
@@ -436,6 +445,20 @@ document.querySelectorAll(".nav-button").forEach(button=>{
 });
 
 $("profileOpenButton").addEventListener("click",()=>showPage("settings"));
+
+$("searchOpenButton").addEventListener("click",()=>{
+ if(currentPage!=="chats")showPage("chats");
+ searchPanelOpen=!searchPanelOpen;
+ $("searchPanel").classList.toggle("open",searchPanelOpen);
+ if(searchPanelOpen){
+  setTimeout(()=>$("searchInput").focus(),0);
+ }else{
+  $("searchInput").value="";
+  $("results").replaceChildren();
+  $("searchStatus").textContent="";
+ }
+});
+
 $("closeProfileButton").addEventListener("click",()=>showPage("chats"));
 
 $("saveProfileButton").addEventListener("click",async()=>{
@@ -512,98 +535,116 @@ $("logoutButton").addEventListener("click",async()=>{
  }catch(error){setStatus("Ошибка выхода: "+error.message)}
 });
 
-/* Список чатов */
+/* Список чатов: отдельная коллекция для каждого пользователя */
 function startChatsListener(){
  stopChatsListener();
  if(!currentUser)return;
  $("chatList").innerHTML='<div class="empty-state">Загружаем чаты...</div>';
  const uid=currentUser.uid;
 
- chatsUnsubscribe=db.collection("chats")
- .where("members","array-contains",uid)
+ chatsUnsubscribe=db.collection("users").doc(uid).collection("chats")
+ .orderBy("updatedAt","desc")
  .onSnapshot(async snapshot=>{
   if(snapshot.empty){
-   $("chatList").innerHTML='<div class="empty-state">💬<br>Пока нет чатов.<br>Найди пользователя и начни общение!</div>';
+   $("chatList").innerHTML='<div class="empty-state">💬<br>Пока нет чатов.<br>Нажми на лупу и найди пользователя!</div>';
    return;
   }
-  $("chatList").innerHTML='<div class="empty-state">Обновляем список...</div>';
+
   const items=await Promise.all(snapshot.docs.map(async doc=>{
+   const data=doc.data();
+   const otherId=data.otherUserId;
+   if(!otherId)return null;
+
+   let userName=data.name||"Пользователь";
    try{
-    const data=doc.data();
-    const members=data.members||[];
-    const otherId=members.find(id=>id!==uid);
-    if(!otherId)return null;
-    let userName="Пользователь";
-    let preview="Пока нет сообщений";
-    let time=data.lastMessageAt||data.createdAt||null;
-    let lastSender=data.lastSenderId||null;
+    const profile=await db.collection("publicProfiles").doc(otherId).get();
+    if(profile.exists)userName=profile.data().name||userName;
+   }catch(e){
+    console.error("Ошибка профиля чата",e);
+   }
 
-    try{
-     const profile=await db.collection("publicProfiles").doc(otherId).get();
-     if(profile.exists)userName=profile.data().name||userName;
-    }catch(e){console.error("Ошибка профиля",e)}
-
-    if(data.lastMessage){
-     preview=data.lastMessage;
-    }else{
-     try{
-      const last=await db.collection("chats").doc(doc.id)
-       .collection("messages").orderBy("createdAt","desc").limit(1).get();
-      if(!last.empty){
-       const msg=last.docs[0].data();
-       preview=msg.text||"";
-       time=msg.createdAt||time;
-       lastSender=msg.senderId||null;
-      }
-     }catch(e){
-      console.error("Ошибка последнего сообщения",e);
-      preview="Последнее сообщение недоступно";
-     }
-    }
-    if(lastSender===uid&&preview!=="Пока нет сообщений")preview="Вы: "+preview;
-    return{id:doc.id,userId:otherId,name:userName,preview,time};
-   }catch(error){console.error(error);return null}
+   return {
+    id:doc.id,
+    userId:otherId,
+    name:userName,
+    preview:data.lastMessage||"Начни общение",
+    time:data.updatedAt||null
+   };
   }));
 
   const valid=items.filter(Boolean);
-  valid.sort((a,b)=>{
-   const ta=a.time&&a.time.toMillis?a.time.toMillis():0;
-   const tb=b.time&&b.time.toMillis?b.time.toMillis():0;
-   return tb-ta;
-  });
-
   $("chatList").replaceChildren();
+
   if(!valid.length){
    $("chatList").innerHTML='<div class="empty-state">Пока нет чатов.</div>';
    return;
   }
+
   valid.forEach(item=>{
-   const row=document.createElement("div");row.className="chat-item";
-   const avatar=document.createElement("div");avatar.className="chat-avatar";
+   const row=document.createElement("div");
+   row.className="chat-item";
+
+   const avatar=document.createElement("div");
+   avatar.className="chat-avatar";
    avatar.textContent=getInitial(item.name);
-   const info=document.createElement("div");info.className="chat-info";
-   const name=document.createElement("div");name.className="chat-name";
+
+   const info=document.createElement("div");
+   info.className="chat-info";
+
+   const name=document.createElement("div");
+   name.className="chat-name";
    name.textContent=item.name;
-   const preview=document.createElement("div");preview.className="chat-preview";
+
+   const preview=document.createElement("div");
+   preview.className="chat-preview";
    preview.textContent=item.preview;
-   const date=document.createElement("div");date.className="chat-date";
+
+   const date=document.createElement("div");
+   date.className="chat-date";
    date.textContent=formatMessageTime(item.time);
-   info.append(name,preview);row.append(avatar,info,date);
+
+   info.append(name,preview);
+   row.append(avatar,info,date);
    row.addEventListener("click",()=>openChat(item.userId,item.name));
    $("chatList").appendChild(row);
   });
  },error=>{
-  console.error(error);
+  console.error("Ошибка личного списка чатов",error);
   $("chatList").textContent="Ошибка списка чатов: "+error.code+" — "+error.message;
  });
+}
+
+/* Сохранение чата в личном списке текущего пользователя */
+async function saveMyChatEntry(otherId,chatId,otherName,lastMessage){
+ const ref=db.collection("users")
+  .doc(currentUser.uid)
+  .collection("chats")
+  .doc(chatId);
+
+ const payload={
+  chatId:chatId,
+  otherUserId:otherId,
+  name:otherName||"Пользователь",
+  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+ };
+
+ if(typeof lastMessage==="string"){
+  payload.lastMessage=lastMessage;
+ }
+
+ await ref.set(payload,{merge:true});
 }
 
 /* Открытие чата */
 async function openChat(userId,userName){
  if(!currentUser||userId===currentUser.uid||openingChat)return;
- openingChat=true;stopMessagesListener();
+
+ openingChat=true;
+ stopMessagesListener();
+
  try{
   $("searchStatus").textContent="Открываем чат...";
+
   const members=[currentUser.uid,userId].sort();
   const chatId=members.join("_");
   const chatRef=db.collection("chats").doc(chatId);
@@ -611,78 +652,135 @@ async function openChat(userId,userName){
 
   if(!chatSnapshot.exists){
    await chatRef.set({
-    members,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    members:members,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
    });
   }else{
    const existing=chatSnapshot.data().members||[];
-   if(existing.length!==2||!existing.includes(currentUser.uid)||!existing.includes(userId)){
+
+   if(existing.length!==2||
+      !existing.includes(currentUser.uid)||
+      !existing.includes(userId)){
     throw new Error("Не совпадают участники чата.");
    }
   }
 
+  // Добавляем чат в личный список пользователя
+  await saveMyChatEntry(userId,chatId,userName);
+
   currentChatId=chatId;
   currentChatName=userName;
+
   $("chatTitle").textContent=userName;
   $("chatHeaderAvatar").textContent=getInitial(userName);
+
   $("mainChatsView").style.display="none";
   $("profileSection").style.display="none";
   $("otherSection").style.display="none";
   $("appHeader").style.display="none";
   $("bottomNav").style.display="none";
   $("chatSection").style.display="block";
+
   startMessagesListener(chatId);
+
  }catch(error){
   console.error("Ошибка открытия чата",error);
-  $("searchStatus").textContent="Не удалось открыть чат: "+(error.code||"ошибка")+" — "+error.message;
- }finally{openingChat=false}
+  $("searchStatus").textContent=
+   "Не удалось открыть чат: "+(error.code||"ошибка")+" — "+error.message;
+ }finally{
+  openingChat=false;
+ }
 }
 
 /* История сообщений */
 function startMessagesListener(chatId){
  stopMessagesListener();
- $("chatMessages").innerHTML='<div class="empty-state">Загружаем сообщения...</div>';
- messagesUnsubscribe=db.collection("chats").doc(chatId)
- .collection("messages").orderBy("createdAt","asc")
- .onSnapshot(snapshot=>{
-  $("chatMessages").replaceChildren();
-  if(snapshot.empty){
-   $("chatMessages").innerHTML='<div class="empty-state">💜<br>Пока нет сообщений.<br>Напиши первым!</div>';
-   return;
-  }
-  snapshot.forEach(doc=>{
-   const data=doc.data();
-   const message=document.createElement("div");
-   message.className="message";
-   const mine=data.senderId===currentUser.uid;
-   if(mine)message.classList.add("mine");
-   const author=document.createElement("div");author.className="message-author";
-   author.textContent=mine?"Вы":currentChatName;
-   const content=document.createElement("div");content.textContent=data.text||"";
-   const time=document.createElement("div");time.className="message-time";
-   time.textContent=formatMessageTime(data.createdAt);
-   message.append(author,content,time);
-   $("chatMessages").appendChild(message);
+
+ $("chatMessages").innerHTML=
+  '<div class="empty-state">Загружаем сообщения...</div>';
+
+ messagesUnsubscribe=db.collection("chats")
+  .doc(chatId)
+  .collection("messages")
+  .orderBy("createdAt","asc")
+  .onSnapshot(snapshot=>{
+   $("chatMessages").replaceChildren();
+
+   if(snapshot.empty){
+    $("chatMessages").innerHTML=
+     '<div class="empty-state">💜<br>Пока нет сообщений.<br>Напиши первым!</div>';
+    return;
+   }
+
+   snapshot.forEach(doc=>{
+    const data=doc.data();
+
+    const message=document.createElement("div");
+    message.className="message";
+
+    const mine=data.senderId===currentUser.uid;
+    if(mine)message.classList.add("mine");
+
+    const author=document.createElement("div");
+    author.className="message-author";
+    author.textContent=mine?"Вы":currentChatName;
+
+    const content=document.createElement("div");
+    content.textContent=data.text||"";
+
+    const time=document.createElement("div");
+    time.className="message-time";
+    time.textContent=formatMessageTime(data.createdAt);
+
+    message.append(author,content,time);
+    $("chatMessages").appendChild(message);
+   });
+
+   $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
+
+  },error=>{
+   console.error(error);
+   $("chatMessages").textContent=
+    "Ошибка загрузки сообщений: "+error.code+" — "+error.message;
   });
-  $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
- },error=>{
-  console.error(error);
-  $("chatMessages").textContent="Ошибка загрузки сообщений: "+error.code+" — "+error.message;
- });
 }
 
 /* Отправка сообщения */
 async function sendMessage(){
  if(!currentUser||!currentChatId)return;
+
  const text=$("messageInput").value.trim();
  if(!text)return;
+
  $("sendMessageButton").disabled=true;
+
  try{
-  await db.collection("chats").doc(currentChatId)
-   .collection("messages").add({
-    senderId:currentUser.uid,text,
+  await db.collection("chats")
+   .doc(currentChatId)
+   .collection("messages")
+   .add({
+    senderId:currentUser.uid,
+    text:text,
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
    });
+
+  const otherId=currentChatId.split("_")
+   .find(id=>id!==currentUser.uid);
+
+  // Обновляем превью и дату в личном списке
+  try{
+   await saveMyChatEntry(
+    otherId,
+    currentChatId,
+    currentChatName,
+    "Вы: "+text
+   );
+  }catch(indexError){
+   console.error("Сообщение отправлено, но список не обновился",indexError);
+  }
+
   $("messageInput").value="";
+
  }catch(error){
   console.error(error);
   alert("Не удалось отправить сообщение: "+error.code+" — "+error.message);
@@ -691,62 +789,110 @@ async function sendMessage(){
   $("messageInput").focus();
  }
 }
+
 $("sendMessageButton").addEventListener("click",sendMessage);
+
 $("messageInput").addEventListener("keydown",event=>{
- if(event.key==="Enter"){event.preventDefault();sendMessage()}
+ if(event.key==="Enter"){
+  event.preventDefault();
+  sendMessage();
+ }
 });
 
 /* Возврат к чатам */
 $("backToSearchButton").addEventListener("click",()=>{
  stopMessagesListener();
  currentChatId=null;
+
  $("chatSection").style.display="none";
  $("appHeader").style.display="flex";
  $("bottomNav").style.display="flex";
+
  showPage("chats");
  $("messageInput").value="";
 });
 
 /* Поиск пользователей */
 $("searchButton").addEventListener("click",async()=>{
- if(!currentUser){$("searchStatus").textContent="Сначала войдите.";return}
+ if(!currentUser){
+  $("searchStatus").textContent="Сначала войдите.";
+  return;
+ }
+
  const term=$("searchInput").value.trim().toLowerCase();
+
  if(term.length<2){
   $("searchStatus").textContent="Введите минимум 2 буквы.";
-  $("results").replaceChildren();return;
+  $("results").replaceChildren();
+  return;
  }
+
  $("searchButton").disabled=true;
  $("searchStatus").textContent="Ищем пользователей...";
  $("results").replaceChildren();
+
  try{
   const snapshot=await db.collection("publicProfiles")
-   .orderBy("nameLower").startAt(term).endAt(term+"\uf8ff").limit(20).get();
+   .orderBy("nameLower")
+   .startAt(term)
+   .endAt(term+"\uf8ff")
+   .limit(20)
+   .get();
+
   let found=0;
+
   snapshot.forEach(doc=>{
    if(doc.id===currentUser.uid)return;
+
    const profile=doc.data();
-   const item=document.createElement("div");item.className="user-result";
-   const avatar=document.createElement("div");avatar.className="chat-avatar";
+
+   const item=document.createElement("div");
+   item.className="user-result";
+
+   const avatar=document.createElement("div");
+   avatar.className="chat-avatar";
    avatar.textContent=getInitial(profile.name);
+
    const info=document.createElement("div");
-   const name=document.createElement("div");name.className="user-name";
+
+   const name=document.createElement("div");
+   name.className="user-name";
    name.textContent=profile.name||"Пользователь";
-   const caption=document.createElement("div");caption.className="user-caption";
+
+   const caption=document.createElement("div");
+   caption.className="user-caption";
    caption.textContent="Пользователь YOR 2";
-   info.append(name,caption);item.append(avatar,info);
-   item.addEventListener("click",()=>openChat(profile.uid||doc.id,profile.name||"Пользователь"));
-   $("results").appendChild(item);found++;
+
+   info.append(name,caption);
+   item.append(avatar,info);
+
+   item.addEventListener("click",()=>{
+    openChat(profile.uid||doc.id,profile.name||"Пользователь");
+   });
+
+   $("results").appendChild(item);
+   found++;
   });
-  $("searchStatus").textContent=found?"Найдено пользователей: "+found:"Пользователи не найдены.";
+
+  $("searchStatus").textContent=found
+   ?"Найдено пользователей: "+found
+   :"Пользователи не найдены.";
+
  }catch(error){
   console.error(error);
-  $("searchStatus").textContent="Ошибка поиска: "+error.code+" — "+error.message;
- }finally{$("searchButton").disabled=false}
+  $("searchStatus").textContent=
+   "Ошибка поиска: "+error.code+" — "+error.message;
+ }finally{
+  $("searchButton").disabled=false;
+ }
 });
 
 /* Проверка авторизации */
 auth.onAuthStateChanged(async user=>{
- stopMessagesListener();stopChatsListener();currentChatId=null;
+ stopMessagesListener();
+ stopChatsListener();
+ currentChatId=null;
+
  if(user){
   try{
    await saveUserProfile(user,user.displayName);
@@ -756,7 +902,8 @@ auth.onAuthStateChanged(async user=>{
    setStatus("Ошибка профиля: "+error.code+" — "+error.message);
   }
  }else{
-  currentUser=null;currentProfileName="";
+  currentUser=null;
+  currentProfileName="";
   $("searchSection").style.display="none";
   $("authSection").style.display="block";
  }
