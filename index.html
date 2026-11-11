@@ -6,186 +6,74 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#090611">
 <title>YOR 2</title>
-
 <style>
 *{box-sizing:border-box}
-:root{
- --bg:#090611;
- --panel:#130d20;
- --panel2:#1c122b;
- --purple:#963cff;
- --neon:#bd70ff;
- --text:#fff;
- --muted:#a99ab8;
- --line:#38234e;
-}
-body{
- margin:0;
- min-height:100vh;
- background:radial-gradient(ellipse at top,#28103e 0%,#10091b 42%,#07060b 100%);
- color:var(--text);
- font-family:Arial,sans-serif;
-}
-button,input{font:inherit}
-button{cursor:pointer}
-#authSection{
- width:min(100% - 32px,420px);
- margin:8vh auto;
- padding:28px 22px;
- border:1px solid #7138a6;
- border-radius:24px;
- background:#130d20;
- box-shadow:0 0 35px #963cff35;
-}
-.logo{
- text-align:center;
- font-size:38px;
- font-weight:900;
- letter-spacing:5px;
- color:#d8aaff;
- text-shadow:0 0 18px #a34cff;
- margin:10px 0 8px;
-}
+:root{--bg:#090611;--panel:#130d20;--panel2:#1c122b;--purple:#963cff;--neon:#bd70ff;--text:#fff;--muted:#a99ab8;--line:#38234e}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#28103e 0%,#10091b 42%,#07060b 100%);color:var(--text);font-family:Arial,sans-serif}
+button,input{font:inherit}button{cursor:pointer}
+#authSection{width:min(100% - 32px,420px);margin:8vh auto;padding:28px 22px;border:1px solid #7138a6;border-radius:24px;background:#130d20;box-shadow:0 0 35px #963cff35}
+.logo{text-align:center;font-size:38px;font-weight:900;letter-spacing:5px;color:#d8aaff;text-shadow:0 0 18px #a34cff;margin:10px 0 8px}
 .subtitle{text-align:center;color:var(--muted);margin-bottom:28px}
 label{display:block;margin:16px 0 7px;color:#e7d8f5;font-size:14px}
-input{
- width:100%;padding:14px;
- border-radius:13px;border:1px solid #69418a;
- background:#090611;color:white;font-size:16px;outline:none;
-}
+input{width:100%;padding:14px;border-radius:13px;border:1px solid #69418a;background:#090611;color:white;font-size:16px;outline:none}
 input:focus{border-color:var(--neon);box-shadow:0 0 10px #963cff40}
-button.primary{
- border:0;border-radius:13px;
- background:linear-gradient(100deg,#7026bd,#b04cff);
- color:white;font-weight:bold;padding:14px;
-}
+button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#7026bd,#b04cff);color:white;font-weight:bold;padding:14px}
 .auth-button{width:100%;margin-top:13px}
-#status,#searchStatus,#profileStatus{
- color:#d9c5ed;font-size:13px;line-height:1.5;
- margin-top:12px;overflow-wrap:anywhere;min-height:20px;
-}
+#status,#searchStatus,#profileStatus{color:#d9c5ed;font-size:13px;line-height:1.5;margin-top:12px;overflow-wrap:anywhere;min-height:20px}
 #searchSection{display:none;min-height:100dvh;padding-bottom:65px}
-.app-header{
- height:74px;display:flex;align-items:center;
- justify-content:space-between;padding:10px 17px;
- border-bottom:1px solid #38234e;
- background:#10091beF;
- position:sticky;top:0;z-index:5;
- backdrop-filter:blur(12px);
-}
+.app-header{height:74px;display:flex;align-items:center;justify-content:space-between;padding:10px 17px;border-bottom:1px solid #38234e;background:#10091beF;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
-.header-avatar,.chat-avatar,.profile-big-avatar{
- display:flex;align-items:center;justify-content:center;
- border-radius:50%;flex-shrink:0;
- background:linear-gradient(135deg,#7138a6,#c15cff);
- border:2px solid #c58cff;color:white;font-weight:bold;
- box-shadow:0 0 14px #963cff55;
-}
+.header-avatar,.chat-avatar,.profile-big-avatar{display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#7138a6,#c15cff);border:2px solid #c58cff;color:white;font-weight:bold;box-shadow:0 0 14px #963cff55}
 .header-avatar{width:44px;height:44px;font-size:19px}
 .brand-text{min-width:0}
 .header-name{font-weight:bold;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .brand-sub{font-size:11px;color:#a995b8;margin-top:4px}
 .header-actions{display:flex;gap:8px}
-.icon-button{
- width:40px;height:40px;border-radius:50%;
- border:1px solid #69418a;background:#1c122b;color:#e8caff;
- font-size:22px;
-}
+.icon-button{width:40px;height:40px;border-radius:50%;border:1px solid #69418a;background:#1c122b;color:#e8caff;font-size:22px}
 .page{padding:18px 15px;max-width:650px;margin:auto}
 .page-title{font-size:25px;margin:4px 0 5px}
 .page-subtitle{font-size:13px;color:var(--muted);margin-bottom:18px}
 .search-row{display:flex;gap:8px}
-#searchPanel{
- display:none;margin:0 0 14px;padding:12px;
- border:1px solid var(--line);border-radius:15px;background:var(--panel)
-}
+#searchPanel{display:none;margin:0 0 14px;padding:12px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
 #searchPanel.open{display:block}
 .search-row input{min-width:0;flex:1}
 .search-row button{padding:0 17px}
 .section-title{font-size:17px;margin:24px 0 12px;color:#e8caff}
 #results{margin-top:8px}
-.user-result{
- display:flex;align-items:center;gap:12px;
- padding:12px;margin-top:8px;border:1px solid var(--line);
- border-radius:15px;background:var(--panel);cursor:pointer;
-}
+.user-result{display:flex;align-items:center;gap:12px;padding:12px;margin-top:8px;border:1px solid var(--line);border-radius:15px;background:var(--panel);cursor:pointer}
 .user-result:active,.chat-item:active{background:#2b1940}
 .user-result .chat-avatar{width:43px;height:43px}
 .user-name{font-weight:bold;color:#e5c5ff}
 .user-caption{font-size:12px;color:var(--muted);margin-top:4px}
-#chatList{
- display:flex;flex-direction:column;
- border:1px solid var(--line);border-radius:18px;
- overflow:hidden;background:#100b19;min-height:100px;
-}
-.chat-item{
- display:flex;align-items:center;gap:12px;
- padding:14px 12px;border-bottom:1px solid #30203f;
- cursor:pointer;min-width:0;
-}
+#chatList{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#100b19;min-height:100px}
+.chat-item{display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #30203f;cursor:pointer;min-width:0}
 .chat-item:last-child{border-bottom:0}
 .chat-avatar{width:49px;height:49px;font-size:19px}
 .chat-info{flex:1;min-width:0}
 .chat-name{font-size:15px;font-weight:bold;color:#f0ddff}
-.chat-preview{
- font-size:13px;color:#a995b8;margin-top:6px;
- overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
+.chat-preview{font-size:13px;color:#a995b8;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chat-date{font-size:10px;color:#927ca4;white-space:nowrap}
 .empty-state{padding:24px 15px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
-.bottom-nav{
- position:fixed;bottom:0;left:0;right:0;z-index:10;
- display:flex;justify-content:space-around;
- padding:5px 5px calc(5px + env(safe-area-inset-bottom));
- background:#10091bf5;border-top:1px solid #49305e;
- backdrop-filter:blur(15px);
-}
-.nav-button{
- flex:1;display:flex;flex-direction:column;align-items:center;
- gap:2px;background:none;border:0;color:#9885aa;
- font-size:9px;padding:2px 0;
-}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-content:space-around;padding:5px 5px calc(5px + env(safe-area-inset-bottom));background:#10091bf5;border-top:1px solid #49305e;backdrop-filter:blur(15px)}
+.nav-button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:#9885aa;font-size:9px;padding:2px 0}
 .nav-button .nav-icon{font-size:18px}
 .nav-button.active{color:#d7a3ff;text-shadow:0 0 12px #b04cff}
 #chatSection{display:none;min-height:calc(100dvh - 74px);padding-bottom:15px}
-.chat-top{
- display:flex;align-items:center;gap:12px;padding:12px 15px;
- border-bottom:1px solid var(--line);background:#10091b;
-}
-.back-button{
- width:40px;height:40px;border:1px solid var(--line);
- border-radius:50%;background:#1c122b;color:white;font-size:21px;
-}
+.chat-top{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--line);background:#10091b}
+.back-button{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#1c122b;color:white;font-size:21px}
 .chat-person{flex:1;min-width:0}
 .chat-person-name{font-weight:bold}
 .chat-person-status{font-size:11px;color:#b68bd8;margin-top:4px}
-#chatMessages{
- height:calc(100dvh - 205px);min-height:260px;
- overflow-y:auto;padding:16px 13px;
- display:flex;flex-direction:column;gap:11px;
-}
-.message{
- max-width:84%;padding:11px 13px;border-radius:16px 16px 16px 5px;
- background:#29183b;align-self:flex-start;
- overflow-wrap:anywhere;box-shadow:0 3px 12px #0003;
-}
-.message.mine{
- background:linear-gradient(135deg,#7130a8,#8738c2);
- align-self:flex-end;border-radius:16px 16px 5px 16px;
-}
+#chatMessages{height:calc(100dvh - 205px);min-height:260px;overflow-y:auto;padding:16px 13px;display:flex;flex-direction:column;gap:11px}
+.message{max-width:84%;padding:11px 13px;border-radius:16px 16px 16px 5px;background:#29183b;align-self:flex-start;overflow-wrap:anywhere;box-shadow:0 3px 12px #0003}
+.message.mine{background:linear-gradient(135deg,#7130a8,#8738c2);align-self:flex-end;border-radius:16px 16px 5px 16px}
 .message-author{font-size:10px;color:#e6caff;margin-bottom:5px}
 .message-time{font-size:10px;color:#d1b8e4;margin-top:6px;text-align:right}
-.composer{
- display:flex;gap:8px;padding:10px 12px;
- border-top:1px solid var(--line);background:#10091b;
-}
+.composer{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#10091b}
 .composer input{flex:1;min-width:0;border-radius:25px;padding:12px 15px}
 .composer button{width:48px;border-radius:50%;font-size:19px;padding:0}
 #profileSection{display:none}
-.profile-card{
- padding:25px 18px;border:1px solid var(--line);
- border-radius:20px;background:var(--panel);text-align:center;
-}
+.profile-card{padding:25px 18px;border:1px solid var(--line);border-radius:20px;background:var(--panel);text-align:center}
 .profile-big-avatar{width:94px;height:94px;margin:5px auto 15px;font-size:38px}
 .profile-display-name{font-size:22px;font-weight:bold}
 .profile-email{color:var(--muted);font-size:13px;margin-top:7px;overflow-wrap:anywhere}
@@ -193,33 +81,21 @@ button.primary{
 .profile-buttons{display:flex;gap:9px;margin-top:13px}
 .profile-buttons button{flex:1}
 .secondary-button{background:#30203f!important;border:1px solid #69418a!important}
-.placeholder-page{
- padding:35px 20px;text-align:center;border:1px solid var(--line);
- background:var(--panel);border-radius:18px;color:var(--muted);
- line-height:1.7;
-}
+.placeholder-page{padding:35px 20px;text-align:center;border:1px solid var(--line);background:var(--panel);border-radius:18px;color:var(--muted);line-height:1.7}
 #otherSection{display:none}
-@media(min-width:700px){
- #searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}
-}
+@media(min-width:700px){#searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}}
 </style>
 </head>
-
 <body>
-
 <section id="authSection">
  <div class="logo">YOR 2</div>
  <div class="subtitle">Общение без границ 💜</div>
-
  <label for="name">Имя</label>
  <input id="name" type="text" placeholder="Как вас зовут">
-
  <label for="email">Email</label>
  <input id="email" type="email" placeholder="name@example.com">
-
  <label for="password">Пароль</label>
  <input id="password" type="password" placeholder="Не менее 6 символов">
-
  <button class="primary auth-button" id="register" type="button">Создать аккаунт</button>
  <button class="primary auth-button" id="login" type="button">Войти</button>
  <div id="status">Введите данные для входа.</div>
@@ -243,7 +119,6 @@ button.primary{
  <main class="page" id="mainChatsView">
   <h1 class="page-title">Сообщения</h1>
   <div class="page-subtitle">Твои личные разговоры</div>
-
   <div id="searchPanel">
    <div class="search-row">
     <input id="searchInput" type="text" placeholder="Найти пользователя">
@@ -252,11 +127,8 @@ button.primary{
    <div id="searchStatus"></div>
    <div id="results"></div>
   </div>
-
   <h2 class="section-title">Последние чаты</h2>
-  <div id="chatList">
-   <div class="empty-state">Загружаем чаты...</div>
-  </div>
+  <div id="chatList"><div class="empty-state">Загружаем чаты...</div></div>
  </main>
 
  <section class="page" id="profileSection">
@@ -282,9 +154,7 @@ button.primary{
  <section class="page" id="otherSection">
   <h1 class="page-title" id="otherTitle">Раздел</h1>
   <div class="page-subtitle">YOR 2</div>
-  <div class="placeholder-page" id="otherText">
-   Этот раздел появится в следующих обновлениях.
-  </div>
+  <div class="placeholder-page" id="otherText">Этот раздел появится в следующих обновлениях.</div>
  </section>
 
  <section id="chatSection">
@@ -296,9 +166,7 @@ button.primary{
     <div class="chat-person-status">Личная переписка</div>
    </div>
   </div>
-  <div id="chatMessages">
-   <div class="empty-state">Загружаем сообщения...</div>
-  </div>
+  <div id="chatMessages"><div class="empty-state">Загружаем сообщения...</div></div>
   <div class="composer">
    <input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
    <button class="primary" id="sendMessageButton" type="button">➤</button>
@@ -306,25 +174,16 @@ button.primary{
  </section>
 
  <nav class="bottom-nav" id="bottomNav">
-  <button class="nav-button active" data-page="chats" type="button">
-   <span class="nav-icon">▤</span><span>Чаты</span>
-  </button>
-  <button class="nav-button" data-page="contacts" type="button">
-   <span class="nav-icon">♙</span><span>Контакты</span>
-  </button>
-  <button class="nav-button" data-page="calls" type="button">
-   <span class="nav-icon">☎</span><span>Звонки</span>
-  </button>
-  <button class="nav-button" data-page="settings" type="button">
-   <span class="nav-icon">☻</span><span>Профиль</span>
-  </button>
+  <button class="nav-button active" data-page="chats" type="button"><span class="nav-icon">▤</span><span>Чаты</span></button>
+  <button class="nav-button" data-page="contacts" type="button"><span class="nav-icon">♙</span><span>Контакты</span></button>
+  <button class="nav-button" data-page="calls" type="button"><span class="nav-icon">☎</span><span>Звонки</span></button>
+  <button class="nav-button" data-page="settings" type="button"><span class="nav-icon">☻</span><span>Профиль</span></button>
  </nav>
 </section>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-
 <script>
 const firebaseConfig={
  apiKey:"AIzaSyDhLGxXGFMGlqtPLRYnXn9M2zE2ODYd5rk",
@@ -352,7 +211,6 @@ if(!window.firebase){
  throw new Error("Firebase не загрузился");
 }
 if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-
 const auth=firebase.auth();
 const db=firebase.firestore();
 auth.languageCode="ru";
@@ -394,9 +252,7 @@ function stopChatsListener(){
 }
 function formatMessageTime(timestamp){
  if(!timestamp||!timestamp.toDate)return "";
- return timestamp.toDate().toLocaleString("ru-RU",{
-  hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"
- });
+ return timestamp.toDate().toLocaleString("ru-RU",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});
 }
 
 function showPage(page){
@@ -443,7 +299,6 @@ function showSearchApp(user){
 document.querySelectorAll(".nav-button").forEach(button=>{
  button.addEventListener("click",()=>showPage(button.dataset.page));
 });
-
 $("profileOpenButton").addEventListener("click",()=>showPage("settings"));
 
 $("searchOpenButton").addEventListener("click",()=>{
@@ -503,7 +358,9 @@ $("register").addEventListener("click",async()=>{
  }catch(error){
   console.error(error);
   setStatus("Ошибка: "+error.code+" — "+error.message);
- }finally{$("register").disabled=false;$("login").disabled=false}
+ }finally{
+  $("register").disabled=false;$("login").disabled=false;
+ }
 });
 
 /* Вход */
@@ -520,7 +377,9 @@ $("login").addEventListener("click",async()=>{
  }catch(error){
   console.error(error);
   setStatus("Ошибка: "+error.code+" — "+error.message);
- }finally{$("register").disabled=false;$("login").disabled=false}
+ }finally{
+  $("register").disabled=false;$("login").disabled=false;
+ }
 });
 
 /* Выход */
@@ -532,18 +391,20 @@ $("logoutButton").addEventListener("click",async()=>{
   $("searchSection").style.display="none";
   $("authSection").style.display="block";
   setStatus("Вы вышли из аккаунта.");
- }catch(error){setStatus("Ошибка выхода: "+error.message)}
+ }catch(error){
+  setStatus("Ошибка выхода: "+error.message);
+ }
 });
 
-/* Список чатов: отдельная коллекция для каждого пользователя */
+/* ОБЩИЙ СПИСОК ЧАТОВ — ИСПРАВЛЕН */
 function startChatsListener(){
  stopChatsListener();
  if(!currentUser)return;
  $("chatList").innerHTML='<div class="empty-state">Загружаем чаты...</div>';
  const uid=currentUser.uid;
 
- chatsUnsubscribe=db.collection("users").doc(uid).collection("chats")
- .orderBy("updatedAt","desc")
+ chatsUnsubscribe=db.collection("chats")
+ .where("members","array-contains",uid)
  .onSnapshot(async snapshot=>{
   if(snapshot.empty){
    $("chatList").innerHTML='<div class="empty-state">💬<br>Пока нет чатов.<br>Нажми на лупу и найди пользователя!</div>';
@@ -552,10 +413,11 @@ function startChatsListener(){
 
   const items=await Promise.all(snapshot.docs.map(async doc=>{
    const data=doc.data();
-   const otherId=data.otherUserId;
+   const members=data.members||[];
+   const otherId=members.find(id=>id!==uid);
    if(!otherId)return null;
 
-   let userName=data.name||"Пользователь";
+   let userName="Пользователь";
    try{
     const profile=await db.collection("publicProfiles").doc(otherId).get();
     if(profile.exists)userName=profile.data().name||userName;
@@ -563,16 +425,25 @@ function startChatsListener(){
     console.error("Ошибка профиля чата",e);
    }
 
+   const preview=data.lastMessage
+    ?((data.lastMessageSenderId===uid?"Вы: ":"")+data.lastMessage)
+    :"Начни общение";
+
    return {
     id:doc.id,
     userId:otherId,
     name:userName,
-    preview:data.lastMessage||"Начни общение",
-    time:data.updatedAt||null
+    preview:preview,
+    time:data.updatedAt||data.createdAt||null
    };
   }));
 
   const valid=items.filter(Boolean);
+  valid.sort((a,b)=>{
+   const at=a.time&&a.time.toMillis?a.time.toMillis():0;
+   const bt=b.time&&b.time.toMillis?b.time.toMillis():0;
+   return bt-at;
+  });
   $("chatList").replaceChildren();
 
   if(!valid.length){
@@ -609,42 +480,19 @@ function startChatsListener(){
    $("chatList").appendChild(row);
   });
  },error=>{
-  console.error("Ошибка личного списка чатов",error);
+  console.error("Ошибка общего списка чатов",error);
   $("chatList").textContent="Ошибка списка чатов: "+error.code+" — "+error.message;
  });
-}
-
-/* Сохранение чата в личном списке текущего пользователя */
-async function saveMyChatEntry(otherId,chatId,otherName,lastMessage){
- const ref=db.collection("users")
-  .doc(currentUser.uid)
-  .collection("chats")
-  .doc(chatId);
-
- const payload={
-  chatId:chatId,
-  otherUserId:otherId,
-  name:otherName||"Пользователь",
-  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
- };
-
- if(typeof lastMessage==="string"){
-  payload.lastMessage=lastMessage;
- }
-
- await ref.set(payload,{merge:true});
 }
 
 /* Открытие чата */
 async function openChat(userId,userName){
  if(!currentUser||userId===currentUser.uid||openingChat)return;
-
  openingChat=true;
  stopMessagesListener();
 
  try{
   $("searchStatus").textContent="Открываем чат...";
-
   const members=[currentUser.uid,userId].sort();
   const chatId=members.join("_");
   const chatRef=db.collection("chats").doc(chatId);
@@ -657,20 +505,14 @@ async function openChat(userId,userName){
    });
   }else{
    const existing=chatSnapshot.data().members||[];
-
-   if(existing.length!==2||
-      !existing.includes(currentUser.uid)||
-      !existing.includes(userId)){
+   if(existing.length!==2||!existing.includes(currentUser.uid)||!existing.includes(userId)){
     throw new Error("Не совпадают участники чата.");
    }
   }
 
-  // Добавляем чат в личный список пользователя
-  await saveMyChatEntry(userId,chatId,userName);
-
+  // Личный индекс больше не нужен: чат общий для обоих пользователей.
   currentChatId=chatId;
   currentChatName=userName;
-
   $("chatTitle").textContent=userName;
   $("chatHeaderAvatar").textContent=getInitial(userName);
 
@@ -680,13 +522,11 @@ async function openChat(userId,userName){
   $("appHeader").style.display="none";
   $("bottomNav").style.display="none";
   $("chatSection").style.display="block";
-
   startMessagesListener(chatId);
 
  }catch(error){
   console.error("Ошибка открытия чата",error);
-  $("searchStatus").textContent=
-   "Не удалось открыть чат: "+(error.code||"ошибка")+" — "+error.message;
+  $("searchStatus").textContent="Не удалось открыть чат: "+(error.code||"ошибка")+" — "+error.message;
  }finally{
   openingChat=false;
  }
@@ -695,9 +535,7 @@ async function openChat(userId,userName){
 /* История сообщений */
 function startMessagesListener(chatId){
  stopMessagesListener();
-
- $("chatMessages").innerHTML=
-  '<div class="empty-state">Загружаем сообщения...</div>';
+ $("chatMessages").innerHTML='<div class="empty-state">Загружаем сообщения...</div>';
 
  messagesUnsubscribe=db.collection("chats")
   .doc(chatId)
@@ -705,19 +543,15 @@ function startMessagesListener(chatId){
   .orderBy("createdAt","asc")
   .onSnapshot(snapshot=>{
    $("chatMessages").replaceChildren();
-
    if(snapshot.empty){
-    $("chatMessages").innerHTML=
-     '<div class="empty-state">💜<br>Пока нет сообщений.<br>Напиши первым!</div>';
+    $("chatMessages").innerHTML='<div class="empty-state">💜<br>Пока нет сообщений.<br>Напиши первым!</div>';
     return;
    }
 
    snapshot.forEach(doc=>{
     const data=doc.data();
-
     const message=document.createElement("div");
     message.className="message";
-
     const mine=data.senderId===currentUser.uid;
     if(mine)message.classList.add("mine");
 
@@ -735,23 +569,18 @@ function startMessagesListener(chatId){
     message.append(author,content,time);
     $("chatMessages").appendChild(message);
    });
-
    $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
-
   },error=>{
    console.error(error);
-   $("chatMessages").textContent=
-    "Ошибка загрузки сообщений: "+error.code+" — "+error.message;
+   $("chatMessages").textContent="Ошибка загрузки сообщений: "+error.code+" — "+error.message;
   });
 }
 
-/* Отправка сообщения */
+/* ОТПРАВКА СООБЩЕНИЯ — ОБНОВЛЯЕТ ОБЩИЙ ЧАТ */
 async function sendMessage(){
  if(!currentUser||!currentChatId)return;
-
  const text=$("messageInput").value.trim();
  if(!text)return;
-
  $("sendMessageButton").disabled=true;
 
  try{
@@ -764,23 +593,13 @@ async function sendMessage(){
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
    });
 
-  const otherId=currentChatId.split("_")
-   .find(id=>id!==currentUser.uid);
-
-  // Обновляем превью и дату в личном списке
-  try{
-   await saveMyChatEntry(
-    otherId,
-    currentChatId,
-    currentChatName,
-    "Вы: "+text
-   );
-  }catch(indexError){
-   console.error("Сообщение отправлено, но список не обновился",indexError);
-  }
+  await db.collection("chats").doc(currentChatId).set({
+   lastMessage:text,
+   lastMessageSenderId:currentUser.uid,
+   updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
 
   $("messageInput").value="";
-
  }catch(error){
   console.error(error);
   alert("Не удалось отправить сообщение: "+error.code+" — "+error.message);
@@ -791,7 +610,6 @@ async function sendMessage(){
 }
 
 $("sendMessageButton").addEventListener("click",sendMessage);
-
 $("messageInput").addEventListener("keydown",event=>{
  if(event.key==="Enter"){
   event.preventDefault();
@@ -803,11 +621,9 @@ $("messageInput").addEventListener("keydown",event=>{
 $("backToSearchButton").addEventListener("click",()=>{
  stopMessagesListener();
  currentChatId=null;
-
  $("chatSection").style.display="none";
  $("appHeader").style.display="flex";
  $("bottomNav").style.display="flex";
-
  showPage("chats");
  $("messageInput").value="";
 });
@@ -818,15 +634,12 @@ $("searchButton").addEventListener("click",async()=>{
   $("searchStatus").textContent="Сначала войдите.";
   return;
  }
-
  const term=$("searchInput").value.trim().toLowerCase();
-
  if(term.length<2){
   $("searchStatus").textContent="Введите минимум 2 буквы.";
   $("results").replaceChildren();
   return;
  }
-
  $("searchButton").disabled=true;
  $("searchStatus").textContent="Ищем пользователей...";
  $("results").replaceChildren();
@@ -840,12 +653,9 @@ $("searchButton").addEventListener("click",async()=>{
    .get();
 
   let found=0;
-
   snapshot.forEach(doc=>{
    if(doc.id===currentUser.uid)return;
-
    const profile=doc.data();
-
    const item=document.createElement("div");
    item.className="user-result";
 
@@ -854,7 +664,6 @@ $("searchButton").addEventListener("click",async()=>{
    avatar.textContent=getInitial(profile.name);
 
    const info=document.createElement("div");
-
    const name=document.createElement("div");
    name.className="user-name";
    name.textContent=profile.name||"Пользователь";
@@ -865,23 +674,17 @@ $("searchButton").addEventListener("click",async()=>{
 
    info.append(name,caption);
    item.append(avatar,info);
-
    item.addEventListener("click",()=>{
     openChat(profile.uid||doc.id,profile.name||"Пользователь");
    });
-
    $("results").appendChild(item);
    found++;
   });
 
-  $("searchStatus").textContent=found
-   ?"Найдено пользователей: "+found
-   :"Пользователи не найдены.";
-
+  $("searchStatus").textContent=found?"Найдено пользователей: "+found:"Пользователи не найдены.";
  }catch(error){
   console.error(error);
-  $("searchStatus").textContent=
-   "Ошибка поиска: "+error.code+" — "+error.message;
+  $("searchStatus").textContent="Ошибка поиска: "+error.code+" — "+error.message;
  }finally{
   $("searchButton").disabled=false;
  }
@@ -892,7 +695,6 @@ auth.onAuthStateChanged(async user=>{
  stopMessagesListener();
  stopChatsListener();
  currentChatId=null;
-
  if(user){
   try{
    await saveUserProfile(user,user.displayName);
