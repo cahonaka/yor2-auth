@@ -10,14 +10,15 @@
 *{box-sizing:border-box}
 :root{--bg:#090611;--panel:#130d20;--panel2:#1c122b;--purple:#963cff;--neon:#bd70ff;--text:#fff;--muted:#a99ab8;--line:#38234e}
 body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#28103e 0%,#10091b 42%,#07060b 100%);color:var(--text);font-family:Arial,sans-serif}
-button,input{font:inherit}button{cursor:pointer}
+button,input,select{font:inherit}
+button{cursor:pointer}
+label{display:block;margin:16px 0 7px;color:#e7d8f5;font-size:14px}
+input,select{width:100%;padding:14px;border-radius:13px;border:1px solid #69418a;background:#090611;color:white;font-size:16px;outline:none}
+input:focus,select:focus{border-color:var(--neon);box-shadow:0 0 10px #963cff40}
+button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#7026bd,#b04cff);color:white;font-weight:bold;padding:14px}
 #authSection{width:min(100% - 32px,420px);margin:8vh auto;padding:28px 22px;border:1px solid #7138a6;border-radius:24px;background:#130d20;box-shadow:0 0 35px #963cff35}
 .logo{text-align:center;font-size:38px;font-weight:900;letter-spacing:5px;color:#d8aaff;text-shadow:0 0 18px #a34cff;margin:10px 0 8px}
 .subtitle{text-align:center;color:var(--muted);margin-bottom:28px}
-label{display:block;margin:16px 0 7px;color:#e7d8f5;font-size:14px}
-input{width:100%;padding:14px;border-radius:13px;border:1px solid #69418a;background:#090611;color:white;font-size:16px;outline:none}
-input:focus{border-color:var(--neon);box-shadow:0 0 10px #963cff40}
-button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#7026bd,#b04cff);color:white;font-weight:bold;padding:14px}
 .auth-button{width:100%;margin-top:13px}
 #status,#searchStatus,#profileStatus{color:#d9c5ed;font-size:13px;line-height:1.5;margin-top:12px;overflow-wrap:anywhere;min-height:20px}
 #searchSection{display:none;min-height:100dvh;padding-bottom:65px}
@@ -72,7 +73,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 .composer{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#10091b}
 .composer input{flex:1;min-width:0;border-radius:25px;padding:12px 15px}
 .composer button{width:48px;border-radius:50%;font-size:19px;padding:0}
-#profileSection{display:none}
+#profileSection,#publicProfileSection{display:none}
 .profile-card{padding:25px 18px;border:1px solid var(--line);border-radius:20px;background:var(--panel);text-align:center}
 .profile-big-avatar{width:94px;height:94px;margin:5px auto 15px;font-size:38px}
 .profile-display-name{font-size:22px;font-weight:bold}
@@ -81,12 +82,17 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 .profile-buttons{display:flex;gap:9px;margin-top:13px}
 .profile-buttons button{flex:1}
 .secondary-button{background:#30203f!important;border:1px solid #69418a!important}
+.profile-age{margin-top:12px;color:#d8aaff;font-size:14px}
+.profile-detail{padding:14px;margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#1c122b;text-align:left}
+.profile-detail span{color:var(--muted);font-size:12px;display:block;margin-bottom:5px}
+.profile-detail strong{font-size:15px;overflow-wrap:anywhere}
 .placeholder-page{padding:35px 20px;text-align:center;border:1px solid var(--line);background:var(--panel);border-radius:18px;color:var(--muted);line-height:1.7}
 #otherSection{display:none}
 @media(min-width:700px){#searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}}
 </style>
 </head>
 <body>
+
 <section id="authSection">
  <div class="logo">YOR 2</div>
  <div class="subtitle">Общение без границ 💜</div>
@@ -117,7 +123,6 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
  </header>
 
  <main class="page" id="mainChatsView">
-  
   <div id="searchPanel">
    <div class="search-row">
     <input id="searchInput" type="text" placeholder="Найти пользователя">
@@ -138,8 +143,19 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
    <div class="profile-display-name" id="profileDisplayName">Пользователь</div>
    <div class="profile-email" id="profileEmail"></div>
    <div class="profile-form">
-    <label for="profileNameInput">Изменить имя</label>
-    <input id="profileNameInput" type="text" maxlength="40" placeholder="Новое имя">
+    <label for="profileFirstName">Имя</label>
+    <input id="profileFirstName" type="text" maxlength="40" placeholder="Твоё имя">
+    <label for="profileLastName">Фамилия</label>
+    <input id="profileLastName" type="text" maxlength="40" placeholder="Твоя фамилия">
+    <label for="profileBirthDate">Дата рождения</label>
+    <input id="profileBirthDate" type="date">
+    <div class="profile-age" id="profileAgePreview">Возраст будет рассчитан автоматически</div>
+    <label for="profileGender">Пол</label>
+    <select id="profileGender">
+     <option value="">Выбери пол</option>
+     <option value="Мужской">Мужской</option>
+     <option value="Женский">Женский</option>
+    </select>
     <div class="profile-buttons">
      <button class="primary" id="saveProfileButton" type="button">Сохранить</button>
      <button class="primary secondary-button" id="closeProfileButton" type="button">Назад</button>
@@ -147,6 +163,21 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
     <button class="primary secondary-button auth-button" id="logoutButton" type="button">Выйти из аккаунта</button>
     <div id="profileStatus"></div>
    </div>
+  </div>
+ </section>
+
+ <section class="page" id="publicProfileSection">
+  <button class="back-button" id="publicProfileBackButton" type="button">‹</button>
+  <h1 class="page-title">Профиль пользователя</h1>
+  <div class="profile-card">
+   <div class="profile-big-avatar" id="publicAvatar">П</div>
+   <div class="profile-display-name" id="publicName">Пользователь</div>
+   <div class="profile-detail"><span>Имя</span><strong id="publicFirstName">—</strong></div>
+   <div class="profile-detail"><span>Фамилия</span><strong id="publicLastName">—</strong></div>
+   <div class="profile-detail"><span>Дата рождения</span><strong id="publicBirthDate">—</strong></div>
+   <div class="profile-detail"><span>Возраст</span><strong id="publicAge">—</strong></div>
+   <div class="profile-detail"><span>Пол</span><strong id="publicGender">—</strong></div>
+   <button class="primary auth-button" id="publicMessageButton" type="button">Написать сообщение</button>
   </div>
  </section>
 
@@ -185,7 +216,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfig={
- apiKey:"AIzaSyDhLGxXGFMGlqtPLRYnXn9M2zE2ODYd5rk",
+ apiKey:"AIzaSyDhLGxXGFMGlqtPLRYXn9M2zE2ODYd5rk",
  authDomain:"yor-2-96bbd.firebaseapp.com",
  projectId:"yor-2-96bbd",
  storageBucket:"yor-2-96bbd.firebasestorage.app",
@@ -198,10 +229,13 @@ const $=id=>document.getElementById(id);
 let currentUser=null;
 let currentChatId=null;
 let currentChatName="";
+let currentChatUserId=null;
 let messagesUnsubscribe=null;
 let chatsUnsubscribe=null;
 let openingChat=false;
 let currentProfileName="";
+let currentProfile={firstName:"",lastName:"",birthDate:"",gender:""};
+let currentViewedProfile=null;
 let currentPage="chats";
 let searchPanelOpen=false;
 
@@ -220,6 +254,37 @@ function getInitial(name){
 }
 function setStatus(message){$("status").textContent=message}
 
+function calculateAge(birthDate){
+ if(!birthDate)return null;
+ const parts=birthDate.split("-").map(Number);
+ if(parts.length!==3||parts.some(n=>!Number.isFinite(n)))return null;
+ const [year,month,day]=parts;
+ const today=new Date();
+ let age=today.getFullYear()-year;
+ const birthdayPassed=(today.getMonth()+1>month)||
+  (today.getMonth()+1===month&&today.getDate()>=day);
+ if(!birthdayPassed)age--;
+ return age;
+}
+
+function formatBirthDate(value){
+ if(!value)return "Не указана";
+ const parts=value.split("-");
+ if(parts.length!==3)return value;
+ return parts[2]+"."+parts[1]+"."+parts[0];
+}
+
+function fullName(profile){
+ return [profile.firstName,profile.lastName].map(v=>(v||"").trim()).filter(Boolean).join(" ")||"Пользователь";
+}
+
+function updateAgePreview(){
+ const age=calculateAge($("profileBirthDate").value);
+ $("profileAgePreview").textContent=age===null
+  ?"Возраст будет рассчитан автоматически"
+  :"Возраст: "+age+" лет";
+}
+
 function updateProfileHeader(name){
  const n=name||"Пользователь";
  $("headerName").textContent=n;
@@ -229,18 +294,62 @@ function updateProfileHeader(name){
  if(currentUser)$("profileEmail").textContent=currentUser.email||"";
 }
 
-async function saveUserProfile(user,name){
- const userName=(name||user.displayName||"Пользователь").trim();
+async function saveUserProfile(user,profile){
+ const firstName=(profile.firstName||"").trim();
+ const lastName=(profile.lastName||"").trim();
+ const birthDate=profile.birthDate||"";
+ const gender=profile.gender||"";
+ const userName=fullName({firstName,lastName});
+
+ const profileData={
+  uid:user.uid,
+  name:userName,
+  nameLower:userName.toLowerCase(),
+  firstName:firstName,
+  lastName:lastName,
+  birthDate:birthDate,
+  gender:gender,
+  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+ };
+
  await db.collection("users").doc(user.uid).set({
-  uid:user.uid,name:userName,email:user.email,
-  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  ...profileData,
+  email:user.email||""
  },{merge:true});
- await db.collection("publicProfiles").doc(user.uid).set({
-  uid:user.uid,name:userName,nameLower:userName.toLowerCase(),
-  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
- },{merge:true});
+
+ await db.collection("publicProfiles").doc(user.uid).set(profileData,{merge:true});
+
+ currentProfile={firstName,lastName,birthDate,gender};
  currentProfileName=userName;
  updateProfileHeader(userName);
+}
+
+async function loadUserProfile(user){
+ const snapshot=await db.collection("users").doc(user.uid).get();
+ const data=snapshot.exists?snapshot.data():{};
+ let firstName=(data.firstName||"").trim();
+ let lastName=(data.lastName||"").trim();
+
+ if(!firstName&&!lastName){
+  const oldName=(data.name||user.displayName||"Пользователь").trim();
+  const pieces=oldName.split(/\s+/);
+  firstName=pieces.shift()||"Пользователь";
+  lastName=pieces.join(" ");
+ }
+
+ currentProfile={
+  firstName:firstName,
+  lastName:lastName,
+  birthDate:data.birthDate||"",
+  gender:data.gender||""
+ };
+ currentProfileName=fullName(currentProfile);
+
+ updateProfileHeader(currentProfileName);
+
+ if(!snapshot.exists){
+  await saveUserProfile(user,currentProfile);
+ }
 }
 
 function stopMessagesListener(){
@@ -258,6 +367,7 @@ function showPage(page){
  currentPage=page;
  $("mainChatsView").style.display="none";
  $("profileSection").style.display="none";
+ $("publicProfileSection").style.display="none";
  $("otherSection").style.display="none";
  $("chatSection").style.display="none";
  $("appHeader").style.display="flex";
@@ -272,8 +382,12 @@ function showPage(page){
  }else if(page==="settings"){
   $("profileSection").style.display="block";
   $("profileStatus").textContent="";
-  $("profileNameInput").value=currentProfileName||currentUser?.displayName||"";
+  $("profileFirstName").value=currentProfile.firstName||"";
+  $("profileLastName").value=currentProfile.lastName||"";
+  $("profileBirthDate").value=currentProfile.birthDate||"";
+  $("profileGender").value=currentProfile.gender||"";
   $("profileEmail").textContent=currentUser?.email||"";
+  updateAgePreview();
   updateProfileHeader(currentProfileName);
  }else{
   $("otherSection").style.display="block";
@@ -295,6 +409,27 @@ function showSearchApp(user){
  startChatsListener();
 }
 
+function openPublicProfile(profile){
+ currentViewedProfile=profile;
+ const name=profile.name||fullName(profile);
+ const age=calculateAge(profile.birthDate||"");
+
+ $("publicAvatar").textContent=getInitial(name);
+ $("publicName").textContent=name;
+ $("publicFirstName").textContent=profile.firstName||"Не указано";
+ $("publicLastName").textContent=profile.lastName||"Не указана";
+ $("publicBirthDate").textContent=formatBirthDate(profile.birthDate);
+ $("publicAge").textContent=age===null?"Не указан":age+" лет";
+ $("publicGender").textContent=profile.gender||"Не указан";
+
+ $("mainChatsView").style.display="none";
+ $("profileSection").style.display="none";
+ $("otherSection").style.display="none";
+ $("publicProfileSection").style.display="block";
+ $("appHeader").style.display="flex";
+ $("bottomNav").style.display="none";
+}
+
 document.querySelectorAll(".nav-button").forEach(button=>{
  button.addEventListener("click",()=>showPage(button.dataset.page));
 });
@@ -314,24 +449,40 @@ $("searchOpenButton").addEventListener("click",()=>{
 });
 
 $("closeProfileButton").addEventListener("click",()=>showPage("chats"));
+$("profileBirthDate").addEventListener("change",updateAgePreview);
 
 $("saveProfileButton").addEventListener("click",async()=>{
  if(!currentUser)return;
- const newName=$("profileNameInput").value.trim();
- if(newName.length<2){
+
+ const firstName=$("profileFirstName").value.trim();
+ const lastName=$("profileLastName").value.trim();
+ const birthDate=$("profileBirthDate").value;
+ const gender=$("profileGender").value;
+
+ if(firstName.length<2){
   $("profileStatus").textContent="Имя должно содержать минимум 2 символа.";
   return;
  }
- if(newName.length>40){
-  $("profileStatus").textContent="Имя не должно быть длиннее 40 символов.";
+ if(firstName.length>40||lastName.length>40){
+  $("profileStatus").textContent="Имя и фамилия не должны быть длиннее 40 символов.";
   return;
  }
+ if(birthDate){
+  const age=calculateAge(birthDate);
+  if(age===null||age<0||age>120){
+   $("profileStatus").textContent="Проверь дату рождения.";
+   return;
+  }
+ }
+
  $("saveProfileButton").disabled=true;
  $("profileStatus").textContent="Сохраняем...";
  try{
+  const profile={firstName,lastName,birthDate,gender};
+  const newName=fullName(profile);
   await currentUser.updateProfile({displayName:newName});
-  await saveUserProfile(currentUser,newName);
-  $("profileStatus").textContent="Имя успешно обновлено!";
+  await saveUserProfile(currentUser,profile);
+  $("profileStatus").textContent="Профиль успешно сохранён!";
  }catch(error){
   console.error(error);
   $("profileStatus").textContent="Ошибка: "+error.code+" — "+error.message;
@@ -352,7 +503,8 @@ $("register").addEventListener("click",async()=>{
  try{
   const result=await auth.createUserWithEmailAndPassword(email,password);
   await result.user.updateProfile({displayName:name});
-  await saveUserProfile(result.user,name);
+  const profile={firstName:name,lastName:"",birthDate:"",gender:""};
+  await saveUserProfile(result.user,profile);
   showSearchApp(result.user);
  }catch(error){
   console.error(error);
@@ -371,7 +523,7 @@ $("login").addEventListener("click",async()=>{
  setStatus("Выполняем вход...");
  try{
   const result=await auth.signInWithEmailAndPassword(email,password);
-  await saveUserProfile(result.user,result.user.displayName);
+  await loadUserProfile(result.user);
   showSearchApp(result.user);
  }catch(error){
   console.error(error);
@@ -387,6 +539,7 @@ $("logoutButton").addEventListener("click",async()=>{
   stopMessagesListener();stopChatsListener();
   await auth.signOut();
   currentUser=null;currentChatId=null;currentProfileName="";
+  currentProfile={firstName:"",lastName:"",birthDate:"",gender:""};
   $("searchSection").style.display="none";
   $("authSection").style.display="block";
   setStatus("Вы вышли из аккаунта.");
@@ -395,7 +548,7 @@ $("logoutButton").addEventListener("click",async()=>{
  }
 });
 
-/* ОБЩИЙ СПИСОК ЧАТОВ — ИСПРАВЛЕН */
+/* Общий список чатов */
 function startChatsListener(){
  stopChatsListener();
  if(!currentUser)return;
@@ -453,26 +606,20 @@ function startChatsListener(){
   valid.forEach(item=>{
    const row=document.createElement("div");
    row.className="chat-item";
-
    const avatar=document.createElement("div");
    avatar.className="chat-avatar";
    avatar.textContent=getInitial(item.name);
-
    const info=document.createElement("div");
    info.className="chat-info";
-
    const name=document.createElement("div");
    name.className="chat-name";
    name.textContent=item.name;
-
    const preview=document.createElement("div");
    preview.className="chat-preview";
    preview.textContent=item.preview;
-
    const date=document.createElement("div");
    date.className="chat-date";
    date.textContent=formatMessageTime(item.time);
-
    info.append(name,preview);
    row.append(avatar,info,date);
    row.addEventListener("click",()=>openChat(item.userId,item.name));
@@ -509,14 +656,15 @@ async function openChat(userId,userName){
    }
   }
 
-  // Личный индекс больше не нужен: чат общий для обоих пользователей.
   currentChatId=chatId;
   currentChatName=userName;
+  currentChatUserId=userId;
   $("chatTitle").textContent=userName;
   $("chatHeaderAvatar").textContent=getInitial(userName);
 
   $("mainChatsView").style.display="none";
   $("profileSection").style.display="none";
+  $("publicProfileSection").style.display="none";
   $("otherSection").style.display="none";
   $("appHeader").style.display="none";
   $("bottomNav").style.display="none";
@@ -553,18 +701,14 @@ function startMessagesListener(chatId){
     message.className="message";
     const mine=data.senderId===currentUser.uid;
     if(mine)message.classList.add("mine");
-
     const author=document.createElement("div");
     author.className="message-author";
     author.textContent=mine?"Вы":currentChatName;
-
     const content=document.createElement("div");
     content.textContent=data.text||"";
-
     const time=document.createElement("div");
     time.className="message-time";
     time.textContent=formatMessageTime(data.createdAt);
-
     message.append(author,content,time);
     $("chatMessages").appendChild(message);
    });
@@ -575,7 +719,7 @@ function startMessagesListener(chatId){
   });
 }
 
-/* ОТПРАВКА СООБЩЕНИЯ — ОБНОВЛЯЕТ ОБЩИЙ ЧАТ */
+/* Отправка сообщения */
 async function sendMessage(){
  if(!currentUser||!currentChatId)return;
  const text=$("messageInput").value.trim();
@@ -620,11 +764,22 @@ $("messageInput").addEventListener("keydown",event=>{
 $("backToSearchButton").addEventListener("click",()=>{
  stopMessagesListener();
  currentChatId=null;
+ currentChatUserId=null;
  $("chatSection").style.display="none";
  $("appHeader").style.display="flex";
  $("bottomNav").style.display="flex";
  showPage("chats");
  $("messageInput").value="";
+});
+
+$("publicProfileBackButton").addEventListener("click",()=>showPage("chats"));
+$("publicMessageButton").addEventListener("click",()=>{
+ if(!currentViewedProfile)return;
+ const uid=currentViewedProfile.uid;
+ const name=currentViewedProfile.name||fullName(currentViewedProfile);
+ $("publicProfileSection").style.display="none";
+ $("bottomNav").style.display="flex";
+ openChat(uid,name);
 });
 
 /* Поиск пользователей */
@@ -657,24 +812,21 @@ $("searchButton").addEventListener("click",async()=>{
    const profile=doc.data();
    const item=document.createElement("div");
    item.className="user-result";
-
    const avatar=document.createElement("div");
    avatar.className="chat-avatar";
    avatar.textContent=getInitial(profile.name);
-
    const info=document.createElement("div");
    const name=document.createElement("div");
    name.className="user-name";
    name.textContent=profile.name||"Пользователь";
-
    const caption=document.createElement("div");
    caption.className="user-caption";
-   caption.textContent="Пользователь YOR 2";
-
+   const age=calculateAge(profile.birthDate||"");
+   caption.textContent=[profile.gender,age===null?"":age+" лет"].filter(Boolean).join(" · ")||"Пользователь YOR 2";
    info.append(name,caption);
    item.append(avatar,info);
    item.addEventListener("click",()=>{
-    openChat(profile.uid||doc.id,profile.name||"Пользователь");
+    openPublicProfile({...profile,uid:profile.uid||doc.id});
    });
    $("results").appendChild(item);
    found++;
@@ -696,7 +848,7 @@ auth.onAuthStateChanged(async user=>{
  currentChatId=null;
  if(user){
   try{
-   await saveUserProfile(user,user.displayName);
+   await loadUserProfile(user);
    showSearchApp(user);
   }catch(error){
    console.error(error);
@@ -705,6 +857,7 @@ auth.onAuthStateChanged(async user=>{
  }else{
   currentUser=null;
   currentProfileName="";
+  currentProfile={firstName:"",lastName:"",birthDate:"",gender:""};
   $("searchSection").style.display="none";
   $("authSection").style.display="block";
  }
