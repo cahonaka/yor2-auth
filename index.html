@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -24,7 +23,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 #searchSection{display:none;min-height:100dvh;padding-bottom:65px}
 .app-header{height:74px;display:flex;align-items:center;justify-content:space-between;padding:10px 17px;border-bottom:1px solid #38234e;background:#10091beF;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
 .brand{display:flex;align-items:center;gap:11px;min-width:0}
-.header-avatar,.chat-avatar,.profile-big-avatar{display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#7138a6,#c15cff);border:2px solid #c58cff;color:white;font-weight:bold;box-shadow:0 0 14px #963cff55}
+.header-avatar,.chat-avatar,.profile-big-avatar{display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#7138a6,#c15cff);border:2px solid #c58cff;color:white;font-weight:bold;box-shadow:0 0 14px #963cff55;background-size:cover;background-position:center;background-repeat:no-repeat}
 .header-avatar{width:44px;height:44px;font-size:19px}
 .brand-text{min-width:0}
 .header-name{font-weight:bold;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -140,6 +139,8 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
   <div class="page-subtitle">Твои данные в YOR 2</div>
   <div class="profile-card">
    <div class="profile-big-avatar" id="profileBigAvatar">П</div>
+   <input id="avatarFileInput" type="file" accept="image/*" hidden>
+   <button class="primary secondary-button" id="changeAvatarButton" type="button">Изменить фотографию</button>
    <div class="profile-display-name" id="profileDisplayName">Пользователь</div>
    <div class="profile-email" id="profileEmail"></div>
    <div class="profile-form">
@@ -215,9 +216,8 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
-
 const firebaseConfig = {
-  apiKey: "AIzaSyDhLGxXGFMGlqtPLRYnXn9M2zE2ODYd5rk",
+  apiKey: "AIzaSyDhLGxXGFMGlqtPLRYxXn9M2zE2ODYd5rk",
   authDomain: "yor-2-96bbd.firebaseapp.com",
   projectId: "yor-2-96bbd",
   storageBucket: "yor-2-96bbd.firebasestorage.app",
@@ -225,6 +225,7 @@ const firebaseConfig = {
   appId: "1:841690613594:web:a69ef7b7de2ece7dde5563",
   measurementId: "G-6C39MKH921"
 };
+
 const $=id=>document.getElementById(id);
 let currentUser=null;
 let currentChatId=null;
@@ -234,7 +235,7 @@ let messagesUnsubscribe=null;
 let chatsUnsubscribe=null;
 let openingChat=false;
 let currentProfileName="";
-let currentProfile={firstName:"",lastName:"",birthDate:"",gender:""};
+let currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
 let currentViewedProfile=null;
 let currentPage="chats";
 let searchPanelOpen=false;
@@ -253,6 +254,47 @@ function getInitial(name){
  return value?value.charAt(0).toUpperCase():"П";
 }
 function setStatus(message){$("status").textContent=message}
+
+function renderAvatar(el,photo,name){
+ if(!el)return;
+ el.style.backgroundImage="";
+ el.textContent=getInitial(name);
+ if(photo&&typeof photo==="string"&&photo.startsWith("data:image/")){
+  el.textContent="";
+  el.style.backgroundImage='url("'+photo+'")';
+ }
+}
+
+function compressAvatar(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onerror=()=>reject(new Error("Не удалось прочитать фотографию."));
+  reader.onload=()=>{
+   const img=new Image();
+   img.onerror=()=>reject(new Error("Не удалось открыть фотографию."));
+   img.onload=()=>{
+    const make=(size,quality)=>{
+     const canvas=document.createElement("canvas");
+     canvas.width=size;
+     canvas.height=size;
+     const ctx=canvas.getContext("2d");
+     const side=Math.min(img.width,img.height);
+     ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,size,size);
+     return canvas.toDataURL("image/jpeg",quality);
+    };
+    let result=make(320,0.68);
+    if(result.length>450000)result=make(240,0.55);
+    if(result.length>600000){
+     reject(new Error("Фото слишком большое. Выбери другое изображение."));
+     return;
+    }
+    resolve(result);
+   };
+   img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+ });
+}
 
 function calculateAge(birthDate){
  if(!birthDate)return null;
@@ -288,8 +330,8 @@ function updateAgePreview(){
 function updateProfileHeader(name){
  const n=name||"Пользователь";
  $("headerName").textContent=n;
- $("headerAvatar").textContent=getInitial(n);
- $("profileBigAvatar").textContent=getInitial(n);
+ renderAvatar($("headerAvatar"),currentProfile.avatar,n);
+ renderAvatar($("profileBigAvatar"),currentProfile.avatar,n);
  $("profileDisplayName").textContent=n;
  if(currentUser)$("profileEmail").textContent=currentUser.email||"";
 }
@@ -299,6 +341,7 @@ async function saveUserProfile(user,profile){
  const lastName=(profile.lastName||"").trim();
  const birthDate=profile.birthDate||"";
  const gender=profile.gender||"";
+ const avatar=profile.avatar||currentProfile.avatar||"";
  const userName=fullName({firstName,lastName});
 
  const profileData={
@@ -309,6 +352,7 @@ async function saveUserProfile(user,profile){
   lastName:lastName,
   birthDate:birthDate,
   gender:gender,
+  avatar:avatar,
   updatedAt:firebase.firestore.FieldValue.serverTimestamp()
  };
 
@@ -319,7 +363,7 @@ async function saveUserProfile(user,profile){
 
  await db.collection("publicProfiles").doc(user.uid).set(profileData,{merge:true});
 
- currentProfile={firstName,lastName,birthDate,gender};
+ currentProfile={firstName,lastName,birthDate,gender,avatar};
  currentProfileName=userName;
  updateProfileHeader(userName);
 }
@@ -341,10 +385,10 @@ async function loadUserProfile(user){
   firstName:firstName,
   lastName:lastName,
   birthDate:data.birthDate||"",
-  gender:data.gender||""
+  gender:data.gender||"",
+  avatar:data.avatar||""
  };
  currentProfileName=fullName(currentProfile);
-
  updateProfileHeader(currentProfileName);
 
  if(!snapshot.exists){
@@ -414,7 +458,7 @@ function openPublicProfile(profile){
  const name=profile.name||fullName(profile);
  const age=calculateAge(profile.birthDate||"");
 
- $("publicAvatar").textContent=getInitial(name);
+ renderAvatar($("publicAvatar"),profile.avatar||"",name);
  $("publicName").textContent=name;
  $("publicFirstName").textContent=profile.firstName||"Не указано";
  $("publicLastName").textContent=profile.lastName||"Не указана";
@@ -449,6 +493,42 @@ $("searchOpenButton").addEventListener("click",()=>{
 });
 
 $("closeProfileButton").addEventListener("click",()=>showPage("chats"));
+
+$("changeAvatarButton").addEventListener("click",()=>{
+ $("avatarFileInput").click();
+});
+
+$("avatarFileInput").addEventListener("change",async event=>{
+ const file=event.target.files&&event.target.files[0];
+ if(!file)return;
+
+ if(!file.type.startsWith("image/")){
+  $("profileStatus").textContent="Выбери изображение.";
+  return;
+ }
+
+ if(file.size>12*1024*1024){
+  $("profileStatus").textContent="Размер исходного фото должен быть меньше 12 МБ.";
+  event.target.value="";
+  return;
+ }
+
+ $("changeAvatarButton").disabled=true;
+ $("profileStatus").textContent="Обрабатываем фотографию...";
+
+ try{
+  const avatar=await compressAvatar(file);
+  await saveUserProfile(currentUser,{...currentProfile,avatar});
+  $("profileStatus").textContent="Фотография сохранена и доступна другим пользователям.";
+ }catch(error){
+  console.error(error);
+  $("profileStatus").textContent="Не удалось сохранить фото: "+error.message;
+ }finally{
+  $("changeAvatarButton").disabled=false;
+  event.target.value="";
+ }
+});
+
 $("profileBirthDate").addEventListener("change",updateAgePreview);
 
 $("saveProfileButton").addEventListener("click",async()=>{
@@ -477,8 +557,9 @@ $("saveProfileButton").addEventListener("click",async()=>{
 
  $("saveProfileButton").disabled=true;
  $("profileStatus").textContent="Сохраняем...";
+
  try{
-  const profile={firstName,lastName,birthDate,gender};
+  const profile={firstName,lastName,birthDate,gender,avatar:currentProfile.avatar||""};
   const newName=fullName(profile);
   await currentUser.updateProfile({displayName:newName});
   await saveUserProfile(currentUser,profile);
@@ -496,21 +577,26 @@ $("register").addEventListener("click",async()=>{
  const name=$("name").value.trim();
  const email=$("email").value.trim();
  const password=$("password").value;
+
  if(!name||!email||!password){setStatus("Заполните все поля.");return}
  if(password.length<6){setStatus("Пароль должен содержать минимум 6 символов.");return}
- $("register").disabled=true;$("login").disabled=true;
+
+ $("register").disabled=true;
+ $("login").disabled=true;
  setStatus("Создаём аккаунт...");
+
  try{
   const result=await auth.createUserWithEmailAndPassword(email,password);
   await result.user.updateProfile({displayName:name});
-  const profile={firstName:name,lastName:"",birthDate:"",gender:""};
+  const profile={firstName:name,lastName:"",birthDate:"",gender:"",avatar:""};
   await saveUserProfile(result.user,profile);
   showSearchApp(result.user);
  }catch(error){
   console.error(error);
   setStatus("Ошибка: "+error.code+" — "+error.message);
  }finally{
-  $("register").disabled=false;$("login").disabled=false;
+  $("register").disabled=false;
+  $("login").disabled=false;
  }
 });
 
@@ -518,9 +604,13 @@ $("register").addEventListener("click",async()=>{
 $("login").addEventListener("click",async()=>{
  const email=$("email").value.trim();
  const password=$("password").value;
+
  if(!email||!password){setStatus("Введите email и пароль.");return}
- $("register").disabled=true;$("login").disabled=true;
+
+ $("register").disabled=true;
+ $("login").disabled=true;
  setStatus("Выполняем вход...");
+
  try{
   const result=await auth.signInWithEmailAndPassword(email,password);
   await loadUserProfile(result.user);
@@ -529,17 +619,21 @@ $("login").addEventListener("click",async()=>{
   console.error(error);
   setStatus("Ошибка: "+error.code+" — "+error.message);
  }finally{
-  $("register").disabled=false;$("login").disabled=false;
+  $("register").disabled=false;
+  $("login").disabled=false;
  }
 });
 
 /* Выход */
 $("logoutButton").addEventListener("click",async()=>{
  try{
-  stopMessagesListener();stopChatsListener();
+  stopMessagesListener();
+  stopChatsListener();
   await auth.signOut();
-  currentUser=null;currentChatId=null;currentProfileName="";
-  currentProfile={firstName:"",lastName:"",birthDate:"",gender:""};
+  currentUser=null;
+  currentChatId=null;
+  currentProfileName="";
+  currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
   $("searchSection").style.display="none";
   $("authSection").style.display="block";
   setStatus("Вы вышли из аккаунта.");
@@ -552,6 +646,7 @@ $("logoutButton").addEventListener("click",async()=>{
 function startChatsListener(){
  stopChatsListener();
  if(!currentUser)return;
+
  $("chatList").innerHTML='<div class="empty-state">Загружаем чаты...</div>';
  const uid=currentUser.uid;
 
@@ -570,9 +665,14 @@ function startChatsListener(){
    if(!otherId)return null;
 
    let userName="Пользователь";
+   let userAvatar="";
+
    try{
     const profile=await db.collection("publicProfiles").doc(otherId).get();
-    if(profile.exists)userName=profile.data().name||userName;
+    if(profile.exists){
+     userName=profile.data().name||userName;
+     userAvatar=profile.data().avatar||"";
+    }
    }catch(e){
     console.error("Ошибка профиля чата",e);
    }
@@ -585,6 +685,7 @@ function startChatsListener(){
     id:doc.id,
     userId:otherId,
     name:userName,
+    avatar:userAvatar,
     preview:preview,
     time:data.updatedAt||data.createdAt||null
    };
@@ -596,6 +697,7 @@ function startChatsListener(){
    const bt=b.time&&b.time.toMillis?b.time.toMillis():0;
    return bt-at;
   });
+
   $("chatList").replaceChildren();
 
   if(!valid.length){
@@ -606,20 +708,26 @@ function startChatsListener(){
   valid.forEach(item=>{
    const row=document.createElement("div");
    row.className="chat-item";
+
    const avatar=document.createElement("div");
    avatar.className="chat-avatar";
-   avatar.textContent=getInitial(item.name);
+   renderAvatar(avatar,item.avatar,item.name);
+
    const info=document.createElement("div");
    info.className="chat-info";
+
    const name=document.createElement("div");
    name.className="chat-name";
    name.textContent=item.name;
+
    const preview=document.createElement("div");
    preview.className="chat-preview";
    preview.textContent=item.preview;
+
    const date=document.createElement("div");
    date.className="chat-date";
    date.textContent=formatMessageTime(item.time);
+
    info.append(name,preview);
    row.append(avatar,info,date);
    row.addEventListener("click",()=>openChat(item.userId,item.name));
@@ -634,6 +742,7 @@ function startChatsListener(){
 /* Открытие чата */
 async function openChat(userId,userName){
  if(!currentUser||userId===currentUser.uid||openingChat)return;
+
  openingChat=true;
  stopMessagesListener();
 
@@ -660,7 +769,16 @@ async function openChat(userId,userName){
   currentChatName=userName;
   currentChatUserId=userId;
   $("chatTitle").textContent=userName;
-  $("chatHeaderAvatar").textContent=getInitial(userName);
+
+  let chatAvatar="";
+  try{
+   const p=await db.collection("publicProfiles").doc(userId).get();
+   if(p.exists)chatAvatar=p.data().avatar||"";
+  }catch(e){
+   console.error(e);
+  }
+
+  renderAvatar($("chatHeaderAvatar"),chatAvatar,userName);
 
   $("mainChatsView").style.display="none";
   $("profileSection").style.display="none";
@@ -669,6 +787,7 @@ async function openChat(userId,userName){
   $("appHeader").style.display="none";
   $("bottomNav").style.display="none";
   $("chatSection").style.display="block";
+
   startMessagesListener(chatId);
 
  }catch(error){
@@ -690,6 +809,7 @@ function startMessagesListener(chatId){
   .orderBy("createdAt","asc")
   .onSnapshot(snapshot=>{
    $("chatMessages").replaceChildren();
+
    if(snapshot.empty){
     $("chatMessages").innerHTML='<div class="empty-state">💜<br>Пока нет сообщений.<br>Напиши первым!</div>';
     return;
@@ -699,19 +819,25 @@ function startMessagesListener(chatId){
     const data=doc.data();
     const message=document.createElement("div");
     message.className="message";
+
     const mine=data.senderId===currentUser.uid;
     if(mine)message.classList.add("mine");
+
     const author=document.createElement("div");
     author.className="message-author";
     author.textContent=mine?"Вы":currentChatName;
+
     const content=document.createElement("div");
     content.textContent=data.text||"";
+
     const time=document.createElement("div");
     time.className="message-time";
     time.textContent=formatMessageTime(data.createdAt);
+
     message.append(author,content,time);
     $("chatMessages").appendChild(message);
    });
+
    $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
   },error=>{
    console.error(error);
@@ -722,8 +848,10 @@ function startMessagesListener(chatId){
 /* Отправка сообщения */
 async function sendMessage(){
  if(!currentUser||!currentChatId)return;
+
  const text=$("messageInput").value.trim();
  if(!text)return;
+
  $("sendMessageButton").disabled=true;
 
  try{
@@ -773,6 +901,7 @@ $("backToSearchButton").addEventListener("click",()=>{
 });
 
 $("publicProfileBackButton").addEventListener("click",()=>showPage("chats"));
+
 $("publicMessageButton").addEventListener("click",()=>{
  if(!currentViewedProfile)return;
  const uid=currentViewedProfile.uid;
@@ -788,12 +917,14 @@ $("searchButton").addEventListener("click",async()=>{
   $("searchStatus").textContent="Сначала войдите.";
   return;
  }
+
  const term=$("searchInput").value.trim().toLowerCase();
  if(term.length<2){
   $("searchStatus").textContent="Введите минимум 2 буквы.";
   $("results").replaceChildren();
   return;
  }
+
  $("searchButton").disabled=true;
  $("searchStatus").textContent="Ищем пользователей...";
  $("results").replaceChildren();
@@ -807,27 +938,37 @@ $("searchButton").addEventListener("click",async()=>{
    .get();
 
   let found=0;
+
   snapshot.forEach(doc=>{
    if(doc.id===currentUser.uid)return;
+
    const profile=doc.data();
    const item=document.createElement("div");
    item.className="user-result";
+
    const avatar=document.createElement("div");
    avatar.className="chat-avatar";
-   avatar.textContent=getInitial(profile.name);
+   renderAvatar(avatar,profile.avatar||"",profile.name);
+
    const info=document.createElement("div");
+
    const name=document.createElement("div");
    name.className="user-name";
    name.textContent=profile.name||"Пользователь";
+
    const caption=document.createElement("div");
    caption.className="user-caption";
+
    const age=calculateAge(profile.birthDate||"");
    caption.textContent=[profile.gender,age===null?"":age+" лет"].filter(Boolean).join(" · ")||"Пользователь YOR 2";
+
    info.append(name,caption);
    item.append(avatar,info);
+
    item.addEventListener("click",()=>{
     openPublicProfile({...profile,uid:profile.uid||doc.id});
    });
+
    $("results").appendChild(item);
    found++;
   });
@@ -846,6 +987,7 @@ auth.onAuthStateChanged(async user=>{
  stopMessagesListener();
  stopChatsListener();
  currentChatId=null;
+
  if(user){
   try{
    await loadUserProfile(user);
@@ -857,7 +999,7 @@ auth.onAuthStateChanged(async user=>{
  }else{
   currentUser=null;
   currentProfileName="";
-  currentProfile={firstName:"",lastName:"",birthDate:"",gender:""};
+  currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
   $("searchSection").style.display="none";
   $("authSection").style.display="block";
  }
