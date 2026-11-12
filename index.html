@@ -227,6 +227,57 @@ const firebaseConfig = {
 };
 
 const $=id=>document.getElementById(id);
+
+/* Временная диагностика Firebase Auth: пароль и API-ключ не сохраняются */
+window.__yorAuthDiag={status:null,body:null};
+(function(){
+ const save=(status,body)=>{
+  window.__yorAuthDiag={status,body};
+ };
+ const originalOpen=XMLHttpRequest.prototype.open;
+ const originalSend=XMLHttpRequest.prototype.send;
+ XMLHttpRequest.prototype.open=function(method,url){
+  this.__yorAuthUrl=url;
+  return originalOpen.apply(this,arguments);
+ };
+ XMLHttpRequest.prototype.send=function(){
+  this.addEventListener("loadend",()=>{
+   if(String(this.__yorAuthUrl||"").includes("identitytoolkit.googleapis.com")){
+    let body="";
+    try{body=this.responseText||""}catch(e){}
+    save(this.status,body);
+   }
+  });
+  return originalSend.apply(this,arguments);
+ };
+ if(window.fetch){
+  const originalFetch=window.fetch;
+  window.fetch=function(){
+   const requestUrl=arguments[0]&&arguments[0].url?arguments[0].url:arguments[0];
+   return originalFetch.apply(this,arguments).then(response=>{
+    if(String(requestUrl||"").includes("identitytoolkit.googleapis.com")){
+     response.clone().text().then(body=>save(response.status,body)).catch(()=>{});
+    }
+    return response;
+   });
+  };
+ }
+})();
+async function showAuthDiagnostic(error){
+ await new Promise(resolve=>setTimeout(resolve,250));
+ const d=window.__yorAuthDiag||{};
+ let serverMessage="";
+ try{
+  const parsed=JSON.parse(d.body||"{}");
+  serverMessage=parsed.error&&parsed.error.message?parsed.error.message:"";
+ }catch(e){}
+ const details=[
+  "Код Firebase: "+(error&&error.code||"нет"),
+  "HTTP сервера: "+(d.status===null?"ответ не перехвачен":d.status),
+  "Ответ сервера: "+(serverMessage||d.body||"не получен")
+ ];
+ setStatus("Ошибка входа. Диагностика:\n"+details.join("\n"));
+}
 let currentUser=null;
 let currentChatId=null;
 let currentChatName="";
@@ -617,7 +668,7 @@ $("login").addEventListener("click",async()=>{
   showSearchApp(result.user);
  }catch(error){
   console.error(error);
-  setStatus("Ошибка: "+error.code+" — "+error.message);
+  await showAuthDiagnostic(error);
  }finally{
   $("register").disabled=false;
   $("login").disabled=false;
