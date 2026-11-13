@@ -72,7 +72,9 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 .message-time{font-size:10px;color:#d1b8e4;margin-top:6px;text-align:right}
 .composer{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#10091b}
 .composer input{flex:1;min-width:0;border-radius:25px;padding:12px 15px}
-.composer button{width:48px;border-radius:50%;font-size:19px;padding:0}
+.composer button{width:48px;min-width:44px;border-radius:50%;font-size:19px;padding:0}
+.message-image{display:block;max-width:min(260px,68vw);max-height:320px;border-radius:12px;object-fit:contain;cursor:zoom-in;margin-top:4px}
+#chatPhotoInput{display:none}
 #profileSection,#publicProfileSection{display:none}
 .profile-card{padding:25px 18px;border:1px solid var(--line);border-radius:20px;background:var(--panel);text-align:center}
 .profile-big-avatar{width:94px;height:94px;margin:5px auto 15px;font-size:38px}
@@ -205,6 +207,8 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
   </div>
   <div id="chatMessages"><div class="empty-state">Загружаем сообщения...</div></div>
   <div class="composer">
+   <input id="chatPhotoInput" type="file" accept="image/jpeg,image/png,image/webp">
+   <button class="secondary-button" id="attachPhotoButton" type="button" aria-label="Отправить фото">＋</button>
    <input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
    <button class="primary" id="sendMessageButton" type="button">➤</button>
   </div>
@@ -223,6 +227,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDhLGxXGFMGlqtPLRYnXn9M2zE2ODYd5rk",
@@ -312,6 +317,12 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 auth.languageCode="ru";
 
+const SUPABASE_URL="https://osmlqxtebbkirdjbkgph.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_fMdasFUHaSSv6-E0uQA1Ig_yXgQteQx";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+ accessToken:async()=>auth.currentUser?await auth.currentUser.getIdToken():null
+});
+
 function getInitial(name){
  const value=(name||"Пользователь").trim();
  return value?value.charAt(0).toUpperCase():"П";
@@ -335,7 +346,7 @@ function renderAvatar(el,photo,name){
  }
 }
 function openPhotoViewer(photo){
- if(!photo||typeof photo!=="string"||!photo.startsWith("data:image/"))return;
+ if(!photo||typeof photo!=="string"||!(photo.startsWith("data:image/")||photo.startsWith("https://")))return;
  $("photoViewerImage").src=photo;
  $("photoViewer").classList.add("open");
 }
@@ -940,7 +951,17 @@ function startMessagesListener(chatId){
     author.textContent=mine?"Вы":currentChatName;
 
     const content=document.createElement("div");
-    content.textContent=data.text||"";
+    if(data.type==="image"&&data.imageUrl){
+     const photo=document.createElement("img");
+     photo.className="message-image";
+     photo.src=data.imageUrl;
+     photo.alt="Фотография";
+     photo.loading="lazy";
+     photo.addEventListener("click",()=>openPhotoViewer(data.imageUrl));
+     content.appendChild(photo);
+    }else{
+     content.textContent=data.text||"";
+    }
 
     const time=document.createElement("div");
     time.className="message-time";
@@ -956,6 +977,63 @@ function startMessagesListener(chatId){
    $("chatMessages").textContent="Ошибка загрузки сообщений: "+error.code+" — "+error.message;
   });
 }
+
+/* Отправка фотографии через закрытое хранилище Supabase */
+async function sendPhoto(file){
+ if(!currentUser||!currentChatId||!file)return;
+ const allowed=["image/jpeg","image/png","image/webp"];
+ if(!allowed.includes(file.type)){
+  alert("Можно отправлять только JPG, PNG или WEBP.");
+  return;
+ }
+ if(file.size>20*1024*1024){
+  alert("Фотография слишком большая. Максимум 20 МБ.");
+  return;
+ }
+ const button=$("attachPhotoButton");
+ button.disabled=true;
+ button.textContent="…";
+ try{
+  const extension=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
+  const filePath=currentUser.uid+"/"+currentChatId+"/"+crypto.randomUUID()+"."+extension;
+  const {data:uploaded,error:uploadError}=await supabaseClient.storage
+   .from("yor-media")
+   .upload(filePath,file,{contentType:file.type,upsert:false});
+  if(uploadError)throw uploadError;
+
+  const {data:signed,error:signedError}=await supabaseClient.storage
+   .from("yor-media")
+   .createSignedUrl(uploaded.path,60*60*24*7);
+  if(signedError)throw signedError;
+
+  await db.collection("chats").doc(currentChatId).collection("messages").add({
+   senderId:currentUser.uid,
+   type:"image",
+   imagePath:uploaded.path,
+   imageUrl:signed.signedUrl,
+   text:"",
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await db.collection("chats").doc(currentChatId).set({
+   lastMessage:"📷 Фото",
+   lastMessageSenderId:currentUser.uid,
+   updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+ }catch(error){
+  console.error("Ошибка отправки фотографии",error);
+  alert("Не удалось отправить фото: "+(error.message||error));
+ }finally{
+  button.disabled=false;
+  button.textContent="＋";
+  $("chatPhotoInput").value="";
+ }
+}
+
+$("attachPhotoButton").addEventListener("click",()=>$("chatPhotoInput").click());
+$("chatPhotoInput").addEventListener("change",event=>{
+ const file=event.target.files&&event.target.files[0];
+ if(file)sendPhoto(file);
+});
 
 /* Отправка сообщения */
 async function sendMessage(){
