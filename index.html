@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#090611">
-<title>YOR 2</title>
+<meta name="theme-color" content="#ffffff">
+<title>YOR</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#090611;--panel:#130d20;--panel2:#1c122b;--purple:#963cff;--neon:#bd70ff;--text:#fff;--muted:#a99ab8;--line:#38234e}
@@ -97,14 +97,47 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 .placeholder-page{padding:35px 20px;text-align:center;border:1px solid var(--line);background:var(--panel);border-radius:18px;color:var(--muted);line-height:1.7}
 #otherSection{display:none}
 @media(min-width:700px){#searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}}
+
+/* Светлая бело-красная тема YOR */
+:root{--bg:#fff;--panel:#fff;--panel2:#fff1f2;--purple:#d71920;--neon:#ef4444;--text:#202124;--muted:#6b7280;--line:#f1c7ca}
+body{background:#fff!important;color:#202124!important}
+#startupLoading{background:#fff;color:#c8102e}#startupLoading span{color:#6b7280}
+#authSection{background:#fff;border-color:#efb2b7;box-shadow:0 8px 30px #b91c1c12}
+.logo{color:#c8102e;text-shadow:none}
+.subtitle,label{color:#4b5563}
+input,select{background:#fff;color:#202124;border-color:#e5a3a8}
+input:focus,select:focus{border-color:#c8102e;box-shadow:0 0 0 3px #c8102e18}
+button.primary{background:linear-gradient(100deg,#b91c1c,#ef4444);color:#fff}
+#status,#searchStatus,#profileStatus{color:#991b1b}
+.app-header,.chat-top,.composer,.attachment-status{background:#fff!important;border-color:#f1c7ca!important;color:#202124}
+.header-avatar,.chat-avatar,.profile-big-avatar{background:linear-gradient(135deg,#b91c1c,#ef4444);border-color:#fca5a5;box-shadow:none}
+.brand-sub,.page-subtitle,.chat-preview,.chat-date,.user-caption,.empty-state,.profile-email,.profile-detail span{color:#6b7280}
+.icon-button,.back-button{background:#fff;border-color:#efb2b7;color:#b91c1c}
+#searchPanel,.user-result,.profile-card,.profile-detail,.placeholder-page{background:#fff;border-color:#f1c7ca;color:#202124}
+.section-title,.user-name,.chat-name,.page-title,.chat-person-name,.profile-display-name,.profile-detail strong{color:#202124}
+.user-result:active,.chat-item:active{background:#fff1f2}
+#chatList{background:#fff;border-color:#f1c7ca}.chat-item{border-color:#f3d6d8}
+.bottom-nav{background:#fff!important;border-color:#f1c7ca!important}
+.nav-button{color:#777}.nav-button.active{color:#c8102e;text-shadow:none}
+.back-button{color:#b91c1c}.chat-person-status{color:#b91c1c}
+.message{background:#f3f4f6;color:#202124;box-shadow:0 2px 8px #0000000d}
+.message.mine{background:#c8102e;color:#fff}
+.message-author,.message-time{color:#6b7280}
+.message.mine .message-author,.message.mine .message-time{color:#ffe4e6}
+.composer input{background:#fff;color:#202124}
+.secondary-button{background:#fff!important;border:1px solid #e5a3a8!important;color:#b91c1c!important}
+.profile-age{color:#b91c1c}
+#closePhotoViewer{background:#c8102e;border-color:#fff;color:#fff}
+@media(min-width:700px){#searchSection{border-color:#f1c7ca!important}}
+
 </style>
 </head>
 <body>
 
-<div id="startupLoading"><div class="logo">YOR 2</div><span>Проверяем вход и подключаемся…</span></div>
+<div id="startupLoading"><div class="logo">YOR</div><span>Проверяем вход и подключаемся…</span></div>
 
 <section id="authSection">
- <div class="logo">YOR 2</div>
+ <div class="logo">YOR</div>
  <div class="subtitle">Общение без границ 💜</div>
  <label for="name">Имя</label>
  <input id="name" type="text" placeholder="Как вас зовут">
@@ -123,7 +156,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
    <div class="header-avatar" id="headerAvatar">П</div>
    <div class="brand-text">
     <div class="header-name" id="headerName">Пользователь</div>
-    <div class="brand-sub">YOR 2 · всегда на связи</div>
+    <div class="brand-sub">YOR · всегда на связи</div>
    </div>
   </div>
   <div class="header-actions">
@@ -147,7 +180,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 
  <section class="page" id="profileSection">
   <h1 class="page-title">Мой профиль</h1>
-  <div class="page-subtitle">Твои данные в YOR 2</div>
+  <div class="page-subtitle">Твои данные в YOR</div>
   <div class="profile-card">
    <div class="profile-big-avatar" id="profileBigAvatar">П</div>
    <input id="avatarFileInput" class="file-picker-input" type="file" accept="image/*" aria-label="Выбрать фотографию" tabindex="-1">
@@ -195,7 +228,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 
  <section class="page" id="otherSection">
   <h1 class="page-title" id="otherTitle">Раздел</h1>
-  <div class="page-subtitle">YOR 2</div>
+  <div class="page-subtitle">YOR</div>
   <div class="placeholder-page" id="otherText">Этот раздел появится в следующих обновлениях.</div>
  </section>
 
@@ -1028,7 +1061,7 @@ async function startVoiceRecording(){
   return;
  }
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
-  setAttachmentStatus("Запись голоса не поддерживается этим браузером. Открой YOR 2 в Chrome.",true);
+  setAttachmentStatus("Запись голоса не поддерживается этим браузером. Открой YOR в Chrome.",true);
   return;
  }
  try{
@@ -1387,7 +1420,7 @@ $("searchButton").addEventListener("click",async()=>{
    caption.className="user-caption";
 
    const age=calculateAge(profile.birthDate||"");
-   caption.textContent=[profile.gender,age===null?"":age+" лет"].filter(Boolean).join(" · ")||"Пользователь YOR 2";
+   caption.textContent=[profile.gender,age===null?"":age+" лет"].filter(Boolean).join(" · ")||"Пользователь YOR";
 
    info.append(name,caption);
    item.append(avatar,info);
