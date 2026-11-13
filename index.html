@@ -857,6 +857,16 @@ async function openChat(userId,userName){
  }
 }
 
+/* Прокрутка к самому новому сообщению */
+function scrollChatToBottom(){
+ const box=$("chatMessages");
+ const move=()=>{box.scrollTop=box.scrollHeight;};
+ requestAnimationFrame(()=>{
+  move();
+  setTimeout(move,80);
+ });
+}
+
 /* История сообщений */
 function startMessagesListener(chatId){
  stopMessagesListener();
@@ -897,7 +907,7 @@ function startMessagesListener(chatId){
     $("chatMessages").appendChild(message);
    });
 
-   $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
+   scrollChatToBottom();
   },error=>{
    console.error(error);
    $("chatMessages").textContent="Ошибка загрузки сообщений: "+error.code+" — "+error.message;
@@ -935,10 +945,11 @@ async function sendMessage(){
   alert("Не удалось отправить сообщение: "+error.code+" — "+error.message);
  }finally{
   $("sendMessageButton").disabled=false;
-  $("messageInput").focus();
  }
 }
 
+// Сохраняем фокус в поле ввода, чтобы клавиатура Android не закрывалась.
+$("sendMessageButton").addEventListener("pointerdown",event=>event.preventDefault());
 $("sendMessageButton").addEventListener("click",sendMessage);
 $("messageInput").addEventListener("keydown",event=>{
  if(event.key==="Enter"){
