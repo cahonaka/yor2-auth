@@ -1,0 +1,99 @@
+name: YOR 2 cloud builds
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - capacitor-migration
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install JavaScript dependencies
+        run: npm install
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Sync web app to Android
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: yor2-android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-simulator:
+    name: Build iOS Simulator app (unsigned)
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm install
+
+      - name: Create iOS project
+        run: npx cap add ios
+
+      - name: Sync web app to iOS
+        run: npx cap sync ios
+
+      - name: Build for iOS Simulator
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath ios/build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package simulator app
+        run: |
+          cd ios/build/Build/Products/Debug-iphonesimulator
+          /usr/bin/zip -r yor2-ios-simulator.zip App.app
+
+      - name: Upload iOS Simulator build
+        uses: actions/upload-artifact@v4
+        with:
+          name: yor2-ios-simulator-unsigned
+          path: ios/build/Build/Products/Debug-iphonesimulator/yor2-ios-simulator.zip
+          if-no-files-found: error
+          retention-days: 14
