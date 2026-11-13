@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - capacitor-migration
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
