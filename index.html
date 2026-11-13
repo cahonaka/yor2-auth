@@ -74,6 +74,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 .composer input{flex:1;min-width:0;border-radius:25px;padding:12px 15px}
 .composer button{width:48px;min-width:44px;border-radius:50%;font-size:19px;padding:0}
 .message-image{display:block;max-width:min(260px,68vw);max-height:320px;border-radius:12px;object-fit:contain;cursor:zoom-in;margin-top:4px}
+.message-audio{display:block;width:min(260px,68vw);max-width:100%;height:42px;margin-top:5px;accent-color:#bd70ff}.recording{background:#7b1f36!important;border-color:#ff7798!important;animation:recordPulse 1.2s infinite}@keyframes recordPulse{50%{box-shadow:0 0 0 5px #ff779833}}
 .attachment-status{display:none;padding:7px 13px;color:#e4c9ff;font-size:12px;background:#10091b;border-top:1px solid var(--line);overflow-wrap:anywhere}.attachment-status.visible{display:block}
 #profileSection,#publicProfileSection{display:none}
 .profile-card{padding:25px 18px;border:1px solid var(--line);border-radius:20px;background:var(--panel);text-align:center}
@@ -209,6 +210,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
   <div class="composer">
    <input id="chatPhotoInput" class="file-picker-input" type="file" accept="image/*">
    <button class="secondary-button" id="attachPhotoButton" type="button" aria-label="Отправить фото">＋</button>
+   <button class="secondary-button" id="recordVoiceButton" type="button" aria-label="Записать голосовое сообщение">🎙</button>
    <input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
    <button class="primary" id="sendMessageButton" type="button">➤</button>
   </div>
@@ -960,6 +962,18 @@ function startMessagesListener(chatId){
      photo.loading="lazy";
      photo.addEventListener("click",()=>openPhotoViewer(data.imageUrl));
      content.appendChild(photo);
+    }else if(data.type==="voice"&&data.voiceUrl){
+     const player=document.createElement("audio");
+     player.className="message-audio";
+     player.controls=true;
+     player.preload="metadata";
+     player.src=data.voiceUrl;
+     player.setAttribute("aria-label","Голосовое сообщение");
+     content.appendChild(player);
+     const duration=document.createElement("div");
+     duration.className="message-time";
+     duration.textContent="🎙 Голосовое сообщение"+(data.voiceDuration?" · "+Math.round(data.voiceDuration)+" сек.":"");
+     content.appendChild(duration);
     }else{
      content.textContent=data.text||"";
     }
@@ -978,6 +992,153 @@ function startMessagesListener(chatId){
    $("chatMessages").textContent="Ошибка загрузки сообщений: "+error.code+" — "+error.message;
   });
 }
+
+/* Голосовые сообщения: запись в браузере и закрытая загрузка Supabase */
+let voiceRecorder=null;
+let voiceStream=null;
+let voiceChunks=[];
+let voiceStartedAt=0;
+let voiceMimeType="";
+
+function stopVoiceTracks(){
+ if(voiceStream){
+  voiceStream.getTracks().forEach(track=>track.stop());
+  voiceStream=null;
+ }
+}
+function chooseVoiceMime(){
+ const candidates=[
+  {mime:"audio/webm;codecs=opus",base:"audio/webm",ext:"webm"},
+  {mime:"audio/mp4",base:"audio/mp4",ext:"mp4"},
+  {mime:"audio/ogg;codecs=opus",base:"audio/ogg",ext:"ogg"}
+ ];
+ if(!window.MediaRecorder)return null;
+ for(const item of candidates){
+  if(MediaRecorder.isTypeSupported(item.mime))return item;
+ }
+ return {mime:"",base:"audio/webm",ext:"webm"};
+}
+async function startVoiceRecording(){
+ if(!currentUser||!currentChatId){
+  setAttachmentStatus("Сначала открой личный чат.",true);
+  return;
+ }
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
+  setAttachmentStatus("Запись голоса не поддерживается этим браузером. Открой YOR 2 в Chrome.",true);
+  return;
+ }
+ try{
+  voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  const chosen=chooseVoiceMime();
+  if(!chosen)throw new Error("Запись аудио не поддерживается.");
+  voiceMimeType=chosen.base;
+  voiceChunks=[];
+  voiceRecorder=new MediaRecorder(voiceStream,chosen.mime?{mimeType:chosen.mime}:{});
+  voiceRecorder.ondataavailable=event=>{
+   if(event.data&&event.data.size)voiceChunks.push(event.data);
+  };
+  voiceRecorder.onerror=event=>{
+   console.error("Ошибка записи голоса",event.error);
+   setAttachmentStatus("Ошибка записи голоса: "+(event.error&&event.error.message||"неизвестная ошибка"),true);
+   stopVoiceTracks();
+   resetVoiceButton();
+  };
+  voiceRecorder.onstop=async()=>{
+   const duration=Math.max(1,Math.round((Date.now()-voiceStartedAt)/1000));
+   const blob=new Blob(voiceChunks,{type:voiceMimeType});
+   voiceChunks=[];
+   stopVoiceTracks();
+   resetVoiceButton();
+   if(blob.size===0){
+    setAttachmentStatus("Запись пустая. Попробуй ещё раз.",true);
+    return;
+   }
+   await sendVoice(blob,duration);
+  };
+  voiceStartedAt=Date.now();
+  voiceRecorder.start(250);
+  const button=$("recordVoiceButton");
+  button.classList.add("recording");
+  button.textContent="■";
+  button.setAttribute("aria-label","Остановить запись");
+  setAttachmentStatus("Идёт запись… Нажми ■, чтобы отправить голосовое сообщение.");
+ }catch(error){
+  console.error("Не удалось начать запись",error);
+  stopVoiceTracks();
+  resetVoiceButton();
+  let reason=error&&error.name==="NotAllowedError"?"Разреши доступ к микрофону в браузере.":(error&&error.message||"неизвестная ошибка");
+  setAttachmentStatus("Не удалось начать запись: "+reason,true);
+ }
+}
+function resetVoiceButton(){
+ const button=$("recordVoiceButton");
+ if(button){
+  button.classList.remove("recording");
+  button.textContent="🎙";
+  button.setAttribute("aria-label","Записать голосовое сообщение");
+ }
+}
+async function sendVoice(blob,duration){
+ if(!currentUser||!currentChatId)return;
+ const button=$("recordVoiceButton");
+ const photoButton=$("attachPhotoButton");
+ button.disabled=true;
+ photoButton.disabled=true;
+ setAttachmentStatus("Отправляю голосовое сообщение…");
+ let stage="подготовка";
+ try{
+  const chosen=chooseVoiceMime();
+  const ext=blob.type.includes("mp4")?"mp4":blob.type.includes("ogg")?"ogg":"webm";
+  const contentType=ext==="mp4"?"audio/mp4":ext==="ogg"?"audio/ogg":"audio/webm";
+  stage="загрузка аудио в хранилище";
+  const randomPart=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+"-"+Math.random().toString(36).slice(2);
+  const filePath=currentUser.uid+"/"+currentChatId+"/"+randomPart+"."+ext;
+  const {data:uploaded,error:uploadError}=await supabaseClient.storage
+   .from("yor-media")
+   .upload(filePath,blob,{contentType,upsert:false});
+  if(uploadError)throw uploadError;
+  if(!uploaded||!uploaded.path)throw new Error("Хранилище не вернуло путь к аудио.");
+  stage="создание ссылки на аудио";
+  const {data:signed,error:signedError}=await supabaseClient.storage
+   .from("yor-media")
+   .createSignedUrl(uploaded.path,60*60*24*7);
+  if(signedError)throw signedError;
+  if(!signed||!signed.signedUrl)throw new Error("Не удалось создать ссылку на аудио.");
+  stage="запись голосового сообщения в Firestore";
+  await db.collection("chats").doc(currentChatId).collection("messages").add({
+   senderId:currentUser.uid,
+   type:"voice",
+   voicePath:uploaded.path,
+   voiceUrl:signed.signedUrl,
+   voiceDuration:duration,
+   text:"",
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  stage="обновление списка чатов";
+  await db.collection("chats").doc(currentChatId).set({
+   lastMessage:"🎙 Голосовое сообщение",
+   lastMessageSenderId:currentUser.uid,
+   updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+  setAttachmentStatus("Голосовое сообщение отправлено ✓");
+ }catch(error){
+  console.error("Ошибка отправки голоса",error);
+  const details=[error&&error.message,error&&error.error,error&&error.statusCode].filter(Boolean).join(" · ");
+  setAttachmentStatus("Ошибка на этапе «"+stage+"»: "+(details||"неизвестная ошибка"),true);
+ }finally{
+  button.disabled=false;
+  photoButton.disabled=false;
+ }
+}
+$("recordVoiceButton").addEventListener("click",()=>{
+ if(voiceRecorder&&voiceRecorder.state==="recording"){
+  $("recordVoiceButton").disabled=true;
+  setAttachmentStatus("Завершаю запись…");
+  voiceRecorder.stop();
+ }else{
+  startVoiceRecording();
+ }
+});
 
 /* Отправка фотографии через закрытое хранилище Supabase */
 function setAttachmentStatus(message,isError=false){
