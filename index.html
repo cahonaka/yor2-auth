@@ -860,11 +860,16 @@ async function openChat(userId,userName){
 /* Прокрутка к самому новому сообщению */
 function scrollChatToBottom(){
  const box=$("chatMessages");
- const move=()=>{box.scrollTop=box.scrollHeight;};
- requestAnimationFrame(()=>{
+ const move=()=>{
+  box.scrollTo({top:box.scrollHeight,behavior:"auto"});
+  const last=box.lastElementChild;
+  if(last)last.scrollIntoView({block:"end",behavior:"auto"});
+ };
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
   move();
-  setTimeout(move,80);
- });
+  setTimeout(move,120);
+  setTimeout(move,350);
+ }));
 }
 
 /* История сообщений */
@@ -948,9 +953,16 @@ async function sendMessage(){
  }
 }
 
-// Сохраняем фокус в поле ввода, чтобы клавиатура Android не закрывалась.
-$("sendMessageButton").addEventListener("pointerdown",event=>event.preventDefault());
-$("sendMessageButton").addEventListener("click",sendMessage);
+// Не переводим фокус с поля ввода на кнопку отправки на телефонах.
+const messageInput=$("messageInput");
+const sendButton=$("sendMessageButton");
+["pointerdown","mousedown","touchstart"].forEach(type=>{
+ sendButton.addEventListener(type,event=>event.preventDefault(),{passive:false});
+});
+sendButton.addEventListener("click",()=>{
+ if(document.activeElement!==messageInput)messageInput.focus({preventScroll:true});
+ sendMessage();
+});
 $("messageInput").addEventListener("keydown",event=>{
  if(event.key==="Enter"){
   event.preventDefault();
