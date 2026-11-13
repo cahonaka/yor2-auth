@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#090611">
+<title>YOR 2</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#090611;--panel:#130d20;--panel2:#1c122b;--purple:#963cff;--neon:#bd70ff;--text:#fff;--muted:#a99ab8;--line:#38234e}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#28103e 0%,#10091b 42%,#07060b 100%);color:var(--text);font-family:Arial,sans-serif}
+button,input,select{font:inherit}
+.file-picker-input{position:fixed!important;left:-10000px!important;top:0!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+button{cursor:pointer}
+label{display:block;margin:16px 0 7px;color:#e7d8f5;font-size:14px}
+input,select{width:100%;padding:14px;border-radius:13px;border:1px solid #69418a;background:#090611;color:white;font-size:16px;outline:none}
+input:focus,select:focus{border-color:var(--neon);box-shadow:0 0 10px #963cff40}
+button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#7026bd,#b04cff);color:white;font-weight:bold;padding:14px}
+#authSection{width:min(100% - 32px,420px);margin:8vh auto;padding:28px 22px;border:1px solid #7138a6;border-radius:24px;background:#130d20;box-shadow:0 0 35px #963cff35}
+.logo{text-align:center;font-size:38px;font-weight:900;letter-spacing:5px;color:#d8aaff;text-shadow:0 0 18px #a34cff;margin:10px 0 8px}
+.subtitle{text-align:center;color:var(--muted);margin-bottom:28px}
+.auth-button{width:100%;margin-top:13px}
+#status,#searchStatus,#profileStatus{color:#d9c5ed;font-size:13px;line-height:1.5;margin-top:12px;overflow-wrap:anywhere;min-height:20px}
+#searchSection{display:none;min-height:100dvh;padding-bottom:65px}
+.app-header{height:74px;display:flex;align-items:center;justify-content:space-between;padding:10px 17px;border-bottom:1px solid #38234e;background:#10091beF;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.header-avatar,.chat-avatar,.profile-big-avatar{display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#7138a6,#c15cff);border:2px solid #c58cff;color:white;font-weight:bold;box-shadow:0 0 14px #963cff55;background-size:cover;background-position:center;background-repeat:no-repeat}
+.header-avatar{width:44px;height:44px;font-size:19px}
+.brand-text{min-width:0}
+.header-name{font-weight:bold;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brand-sub{font-size:11px;color:#a995b8;margin-top:4px}
+.header-actions{display:flex;gap:8px}
+.icon-button{width:40px;height:40px;border-radius:50%;border:1px solid #69418a;background:#1c122b;color:#e8caff;font-size:22px}
+.page{padding:18px 15px;max-width:650px;margin:auto}
+.page-title{font-size:25px;margin:4px 0 5px}
+.page-subtitle{font-size:13px;color:var(--muted);margin-bottom:18px}
+.search-row{display:flex;gap:8px}
+#searchPanel{display:none;margin:0 0 14px;padding:12px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
+#searchPanel.open{display:block}
+.search-row input{min-width:0;flex:1}
+.search-row button{padding:0 17px}
+.section-title{font-size:17px;margin:24px 0 12px;color:#e8caff}
+#results{margin-top:8px}
+.user-result{display:flex;align-items:center;gap:12px;padding:12px;margin-top:8px;border:1px solid var(--line);border-radius:15px;background:var(--panel);cursor:pointer}
+.user-result:active,.chat-item:active{background:#2b1940}
+.user-result .chat-avatar{width:43px;height:43px}
+.user-name{font-weight:bold;color:#e5c5ff}
+.user-caption{font-size:12px;color:var(--muted);margin-top:4px}
+#chatList{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#100b19;min-height:100px}
+.chat-item{display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #30203f;cursor:pointer;min-width:0}
+.chat-item:last-child{border-bottom:0}
+.chat-avatar{width:49px;height:49px;font-size:19px}
+.chat-info{flex:1;min-width:0}
+.chat-name{font-size:15px;font-weight:bold;color:#f0ddff}
+.chat-preview{font-size:13px;color:#a995b8;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-date{font-size:10px;color:#927ca4;white-space:nowrap}
+.empty-state{padding:24px 15px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;justify-content:space-around;padding:5px 5px calc(5px + env(safe-area-inset-bottom));background:#10091bf5;border-top:1px solid #49305e;backdrop-filter:blur(15px)}
+.nav-button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:#9885aa;font-size:9px;padding:2px 0}
+.nav-button .nav-icon{font-size:18px}
+.nav-button.active{color:#d7a3ff;text-shadow:0 0 12px #b04cff}
+#chatSection{display:none;min-height:calc(100dvh - 74px);padding-bottom:15px}
+.chat-top{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--line);background:#10091b}
+.back-button{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#1c122b;color:white;font-size:21px}
+.chat-person{flex:1;min-width:0}
+.chat-person-name{font-weight:bold}
+.chat-person-status{font-size:11px;color:#b68bd8;margin-top:4px}
+#chatMessages{height:calc(100dvh - 205px);min-height:260px;overflow-y:auto;padding:16px 13px;display:flex;flex-direction:column;gap:11px}
+.message{max-width:84%;padding:11px 13px;border-radius:16px 16px 16px 5px;background:#29183b;align-self:flex-start;overflow-wrap:anywhere;box-shadow:0 3px 12px #0003}
+.message.mine{background:linear-gradient(135deg,#7130a8,#8738c2);align-self:flex-end;border-radius:16px 16px 5px 16px}
+.message-author{font-size:10px;color:#e6caff;margin-bottom:5px}
+.message-time{font-size:10px;color:#d1b8e4;margin-top:6px;text-align:right}
+.composer{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#10091b}
+.composer input{flex:1;min-width:0;border-radius:25px;padding:12px 15px}
+.composer button{width:48px;border-radius:50%;font-size:19px;padding:0}
+#profileSection,#publicProfileSection{display:none}
+.profile-card{padding:25px 18px;border:1px solid var(--line);border-radius:20px;background:var(--panel);text-align:center}
+.profile-big-avatar{width:94px;height:94px;margin:5px auto 15px;font-size:38px}
+.profile-display-name{font-size:22px;font-weight:bold}
+.profile-email{color:var(--muted);font-size:13px;margin-top:7px;overflow-wrap:anywhere}
+.profile-form{text-align:left;margin-top:25px}
+.profile-buttons{display:flex;gap:9px;margin-top:13px}
+.profile-buttons button{flex:1}
+.secondary-button{background:#30203f!important;border:1px solid #69418a!important}
+.profile-age{margin-top:12px;color:#d8aaff;font-size:14px}
+.profile-detail{padding:14px;margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#1c122b;text-align:left}
+.profile-detail span{color:var(--muted);font-size:12px;display:block;margin-bottom:5px}
+.profile-detail strong{font-size:15px;overflow-wrap:anywhere}
+.placeholder-page{padding:35px 20px;text-align:center;border:1px solid var(--line);background:var(--panel);border-radius:18px;color:var(--muted);line-height:1.7}
+#otherSection{display:none}
+@media(min-width:700px){#searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}}
+</style>
+</head>
+<body>
+
+<section id="authSection">
+ <div class="logo">YOR 2</div>
+ <div class="subtitle">Общение без границ 💜</div>
+ <label for="name">Имя</label>
+ <input id="name" type="text" placeholder="Как вас зовут">
+ <label for="email">Email</label>
+ <input id="email" type="email" placeholder="name@example.com">
+ <label for="password">Пароль</label>
+ <input id="password" type="password" placeholder="Не менее 6 символов">
+ <button class="primary auth-button" id="register" type="button">Создать аккаунт</button>
+ <button class="primary auth-button" id="login" type="button">Войти</button>
+ <div id="status">Введите данные для входа.</div>
+</section>
+
+<section id="searchSection">
+ <header class="app-header" id="appHeader">
+  <div class="brand">
+   <div class="header-avatar" id="headerAvatar">П</div>
+   <div class="brand-text">
+    <div class="header-name" id="headerName">Пользователь</div>
+    <div class="brand-sub">YOR 2 · всегда на связи</div>
+   </div>
+  </div>
+  <div class="header-actions">
+   <button class="icon-button" id="searchOpenButton" type="button" title="Поиск пользователей">⌕</button>
+   <button class="icon-button" id="profileOpenButton" type="button" title="Профиль">☻</button>
+  </div>
+ </header>
+
+ <main class="page" id="mainChatsView">
+  <div id="searchPanel">
+   <div class="search-row">
+    <input id="searchInput" type="text" placeholder="Найти пользователя">
+    <button class="primary" id="searchButton" type="button">Найти</button>
+   </div>
+   <div id="searchStatus"></div>
+   <div id="results"></div>
+  </div>
+  <h2 class="section-title">Последние чаты</h2>
+  <div id="chatList"><div class="empty-state">Загружаем чаты...</div></div>
+ </main>
+
+ <section class="page" id="profileSection">
+  <h1 class="page-title">Мой профиль</h1>
+  <div class="page-subtitle">Твои данные в YOR 2</div>
+  <div class="profile-card">
+   <div class="profile-big-avatar" id="profileBigAvatar">П</div>
+   <input id="avatarFileInput" class="file-picker-input" type="file" accept="image/*" aria-label="Выбрать фотографию" tabindex="-1">
+   <button class="primary secondary-button" id="changeAvatarButton" type="button">Изменить фотографию</button>
+   <div class="profile-display-name" id="profileDisplayName">Пользователь</div>
+   <div class="profile-email" id="profileEmail"></div>
+   <div class="profile-form">
+    <label for="profileFirstName">Имя</label>
+    <input id="profileFirstName" type="text" maxlength="40" placeholder="Твоё имя">
+    <label for="profileLastName">Фамилия</label>
+    <input id="profileLastName" type="text" maxlength="40" placeholder="Твоя фамилия">
+    <label for="profileBirthDate">Дата рождения</label>
+    <input id="profileBirthDate" type="date">
+    <div class="profile-age" id="profileAgePreview">Возраст будет рассчитан автоматически</div>
+    <label for="profileGender">Пол</label>
+    <select id="profileGender">
+     <option value="">Выбери пол</option>
+     <option value="Мужской">Мужской</option>
+     <option value="Женский">Женский</option>
+    </select>
+    <div class="profile-buttons">
+     <button class="primary" id="saveProfileButton" type="button">Сохранить</button>
+     <button class="primary secondary-button" id="closeProfileButton" type="button">Назад</button>
+    </div>
+    <button class="primary secondary-button auth-button" id="logoutButton" type="button">Выйти из аккаунта</button>
+    <div id="profileStatus"></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="page" id="publicProfileSection">
+  <button class="back-button" id="publicProfileBackButton" type="button">‹</button>
+  <h1 class="page-title">Профиль пользователя</h1>
+  <div class="profile-card">
+   <div class="profile-big-avatar" id="publicAvatar">П</div>
+   <div class="profile-display-name" id="publicName">Пользователь</div>
+   <div class="profile-detail"><span>Имя</span><strong id="publicFirstName">—</strong></div>
+   <div class="profile-detail"><span>Фамилия</span><strong id="publicLastName">—</strong></div>
+   <div class="profile-detail"><span>Дата рождения</span><strong id="publicBirthDate">—</strong></div>
+   <div class="profile-detail"><span>Возраст</span><strong id="publicAge">—</strong></div>
+   <div class="profile-detail"><span>Пол</span><strong id="publicGender">—</strong></div>
+   <button class="primary auth-button" id="publicMessageButton" type="button">Написать сообщение</button>
+  </div>
+ </section>
+
+ <section class="page" id="otherSection">
+  <h1 class="page-title" id="otherTitle">Раздел</h1>
+  <div class="page-subtitle">YOR 2</div>
+  <div class="placeholder-page" id="otherText">Этот раздел появится в следующих обновлениях.</div>
+ </section>
+
+ <section id="chatSection">
+  <div class="chat-top">
+   <button class="back-button" id="backToSearchButton" type="button">‹</button>
+   <div class="chat-avatar" id="chatHeaderAvatar">П</div>
+   <div class="chat-person">
+    <div class="chat-person-name" id="chatTitle">Личный чат</div>
+    <div class="chat-person-status">Личная переписка</div>
+   </div>
+  </div>
+  <div id="chatMessages"><div class="empty-state">Загружаем сообщения...</div></div>
+  <div class="composer">
+   <input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
+   <button class="primary" id="sendMessageButton" type="button">➤</button>
+  </div>
+ </section>
+
+ <nav class="bottom-nav" id="bottomNav">
+  <button class="nav-button active" data-page="chats" type="button"><span class="nav-icon">▤</span><span>Чаты</span></button>
+  <button class="nav-button" data-page="contacts" type="button"><span class="nav-icon">♙</span><span>Контакты</span></button>
+  <button class="nav-button" data-page="calls" type="button"><span class="nav-icon">☎</span><span>Звонки</span></button>
+  <button class="nav-button" data-page="settings" type="button"><span class="nav-icon">☻</span><span>Профиль</span></button>
+ </nav>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDhLGxXGFMGlqtPLRYnXn9M2zE2ODYd5rk",
+  authDomain: "yor-2-96bbd.firebaseapp.com",
+  projectId: "yor-2-96bbd",
+  storageBucket: "yor-2-96bbd.firebasestorage.app",
+  messagingSenderId: "841690613594",
+  appId: "1:841690613594:web:a69ef7b7de2ece7dde5563",
+  measurementId: "G-6C39MKH921"
+};
+
+const $=id=>document.getElementById(id);
+
+/* Временная диагностика Firebase Auth: пароль и API-ключ не сохраняются */
+window.__yorAuthDiag={status:null,body:null,requestKeyTail:null,requestKeyLength:null};
+(function(){
+ const save=(status,body,url)=>{
+  const match=String(url||"").match(/[?&]key=([^&]+)/);
+  let key="";try{key=decodeURIComponent(match?match[1]:"")}catch(e){}
+  window.__yorAuthDiag={status,body,requestKeyTail:key?key.slice(-6):null,requestKeyLength:key?key.length:null};
+ };
+ const originalOpen=XMLHttpRequest.prototype.open;
+ const originalSend=XMLHttpRequest.prototype.send;
+ XMLHttpRequest.prototype.open=function(method,url){
+  this.__yorAuthUrl=url;
+  return originalOpen.apply(this,arguments);
+ };
+ XMLHttpRequest.prototype.send=function(){
+  this.addEventListener("loadend",()=>{
+   if(String(this.__yorAuthUrl||"").includes("identitytoolkit.googleapis.com")){
+    let body="";
+    try{body=this.responseText||""}catch(e){}
+    save(this.status,body,this.__yorAuthUrl);
+   }
+  });
+  return originalSend.apply(this,arguments);
+ };
+ if(window.fetch){
+  const originalFetch=window.fetch;
+  window.fetch=function(){
+   const requestUrl=arguments[0]&&arguments[0].url?arguments[0].url:arguments[0];
+   return originalFetch.apply(this,arguments).then(response=>{
+    if(String(requestUrl||"").includes("identitytoolkit.googleapis.com")){
+     response.clone().text().then(body=>save(response.status,body,requestUrl)).catch(()=>{});
+    }
+    return response;
+   });
+  };
+ }
+})();
+async function showAuthDiagnostic(error){
+ await new Promise(resolve=>setTimeout(resolve,250));
+ const d=window.__yorAuthDiag||{};
+ let serverMessage="";
+ try{
+  const parsed=JSON.parse(d.body||"{}");
+  serverMessage=parsed.error&&parsed.error.message?parsed.error.message:"";
+ }catch(e){}
+ const details=[
+  "Код Firebase: "+(error&&error.code||"нет"),
+  "HTTP сервера: "+(d.status===null?"ответ не перехвачен":d.status),
+  "Ключ в запросе: "+(d.requestKeyTail?"последние 6 символов "+d.requestKeyTail+", длина "+d.requestKeyLength:"не определён"),
+  "Ключ в конфиге: "+(firebaseConfig.apiKey.slice(-6)+", длина "+firebaseConfig.apiKey.length),
+  "Ответ сервера: "+(serverMessage||d.body||"не получен")
+ ];
+ setStatus("Ошибка входа. Диагностика:\n"+details.join("\n"));
+}
+let currentUser=null;
+let currentChatId=null;
+let currentChatName="";
+let currentChatUserId=null;
+let messagesUnsubscribe=null;
+let chatsUnsubscribe=null;
+let openingChat=false;
+let currentProfileName="";
+let currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
+let currentViewedProfile=null;
+let currentPage="chats";
+let searchPanelOpen=false;
+
+if(!window.firebase){
+ $("status").textContent="Firebase не загрузился. Проверь интернет.";
+ throw new Error("Firebase не загрузился");
+}
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+auth.languageCode="ru";
+
+function getInitial(name){
+ const value=(name||"Пользователь").trim();
+ return value?value.charAt(0).toUpperCase():"П";
+}
+function setStatus(message){$("status").textContent=message}
+
+function renderAvatar(el,photo,name){
+ if(!el)return;
+ el.style.backgroundImage="";
+ el.textContent=getInitial(name);
+ if(photo&&typeof photo==="string"&&photo.startsWith("data:image/")){
+  el.textContent="";
+  el.style.backgroundImage='url("'+photo+'")';
+ }
+}
+
+function compressAvatar(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onerror=()=>reject(new Error("Не удалось прочитать фотографию."));
+  reader.onload=()=>{
+   const img=new Image();
+   img.onerror=()=>reject(new Error("Не удалось открыть фотографию."));
+   img.onload=()=>{
+    const make=(size,quality)=>{
+     const canvas=document.createElement("canvas");
+     canvas.width=size;
+     canvas.height=size;
+     const ctx=canvas.getContext("2d");
+     const side=Math.min(img.width,img.height);
+     ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,size,size);
+     return canvas.toDataURL("image/jpeg",quality);
+    };
+    let result=make(320,0.68);
+    if(result.length>450000)result=make(240,0.55);
+    if(result.length>600000){
+     reject(new Error("Фото слишком большое. Выбери другое изображение."));
+     return;
+    }
+    resolve(result);
+   };
+   img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+ });
+}
+
+function calculateAge(birthDate){
+ if(!birthDate)return null;
+ const parts=birthDate.split("-").map(Number);
+ if(parts.length!==3||parts.some(n=>!Number.isFinite(n)))return null;
+ const [year,month,day]=parts;
+ const today=new Date();
+ let age=today.getFullYear()-year;
+ const birthdayPassed=(today.getMonth()+1>month)||
+  (today.getMonth()+1===month&&today.getDate()>=day);
+ if(!birthdayPassed)age--;
+ return age;
+}
+
+function formatBirthDate(value){
+ if(!value)return "Не указана";
+ const parts=value.split("-");
+ if(parts.length!==3)return value;
+ return parts[2]+"."+parts[1]+"."+parts[0];
+}
+
+function fullName(profile){
+ return [profile.firstName,profile.lastName].map(v=>(v||"").trim()).filter(Boolean).join(" ")||"Пользователь";
+}
+
+function updateAgePreview(){
+ const age=calculateAge($("profileBirthDate").value);
+ $("profileAgePreview").textContent=age===null
+  ?"Возраст будет рассчитан автоматически"
+  :"Возраст: "+age+" лет";
+}
+
+function updateProfileHeader(name){
+ const n=name||"Пользователь";
+ $("headerName").textContent=n;
+ renderAvatar($("headerAvatar"),currentProfile.avatar,n);
+ renderAvatar($("profileBigAvatar"),currentProfile.avatar,n);
+ $("profileDisplayName").textContent=n;
+ if(currentUser)$("profileEmail").textContent=currentUser.email||"";
+}
+
+async function saveUserProfile(user,profile){
+ const firstName=(profile.firstName||"").trim();
+ const lastName=(profile.lastName||"").trim();
+ const birthDate=profile.birthDate||"";
+ const gender=profile.gender||"";
+ const avatar=profile.avatar||currentProfile.avatar||"";
+ const userName=fullName({firstName,lastName});
+
+ const profileData={
+  uid:user.uid,
+  name:userName,
+  nameLower:userName.toLowerCase(),
+  firstName:firstName,
+  lastName:lastName,
+  birthDate:birthDate,
+  gender:gender,
+  avatar:avatar,
+  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+ };
+
+ await db.collection("users").doc(user.uid).set({
+  ...profileData,
+  email:user.email||""
+ },{merge:true});
+
+ await db.collection("publicProfiles").doc(user.uid).set(profileData,{merge:true});
+
+ currentProfile={firstName,lastName,birthDate,gender,avatar};
+ currentProfileName=userName;
+ updateProfileHeader(userName);
+}
+
+async function loadUserProfile(user){
+ const snapshot=await db.collection("users").doc(user.uid).get();
+ const data=snapshot.exists?snapshot.data():{};
+ let firstName=(data.firstName||"").trim();
+ let lastName=(data.lastName||"").trim();
+
+ if(!firstName&&!lastName){
+  const oldName=(data.name||user.displayName||"Пользователь").trim();
+  const pieces=oldName.split(/\s+/);
+  firstName=pieces.shift()||"Пользователь";
+  lastName=pieces.join(" ");
+ }
+
+ currentProfile={
+  firstName:firstName,
+  lastName:lastName,
+  birthDate:data.birthDate||"",
+  gender:data.gender||"",
+  avatar:data.avatar||""
+ };
+ currentProfileName=fullName(currentProfile);
+ updateProfileHeader(currentProfileName);
+
+ if(!snapshot.exists){
+  await saveUserProfile(user,currentProfile);
+ }
+}
+
+function stopMessagesListener(){
+ if(messagesUnsubscribe){messagesUnsubscribe();messagesUnsubscribe=null}
+}
+function stopChatsListener(){
+ if(chatsUnsubscribe){chatsUnsubscribe();chatsUnsubscribe=null}
+}
+function formatMessageTime(timestamp){
+ if(!timestamp||!timestamp.toDate)return "";
+ return timestamp.toDate().toLocaleString("ru-RU",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});
+}
+
+function showPage(page){
+ currentPage=page;
+ $("mainChatsView").style.display="none";
+ $("profileSection").style.display="none";
+ $("publicProfileSection").style.display="none";
+ $("otherSection").style.display="none";
+ $("chatSection").style.display="none";
+ $("appHeader").style.display="flex";
+ $("bottomNav").style.display="flex";
+
+ document.querySelectorAll(".nav-button").forEach(button=>{
+  button.classList.toggle("active",button.dataset.page===page);
+ });
+
+ if(page==="chats"){
+  $("mainChatsView").style.display="block";
+ }else if(page==="settings"){
+  $("profileSection").style.display="block";
+  $("profileStatus").textContent="";
+  $("profileFirstName").value=currentProfile.firstName||"";
+  $("profileLastName").value=currentProfile.lastName||"";
+  $("profileBirthDate").value=currentProfile.birthDate||"";
+  $("profileGender").value=currentProfile.gender||"";
+  $("profileEmail").textContent=currentUser?.email||"";
+  updateAgePreview();
+  updateProfileHeader(currentProfileName);
+ }else{
+  $("otherSection").style.display="block";
+  $("otherTitle").textContent=page==="contacts"?"Контакты":"Звонки";
+  $("otherText").textContent=page==="contacts"
+   ?"Ищи пользователей через поиск на вкладке «Чаты», чтобы начать общение."
+   :"Голосовые и видеозвонки появятся в следующих обновлениях.";
+ }
+}
+
+function showSearchApp(user){
+ currentUser=user;
+ $("authSection").style.display="none";
+ $("searchSection").style.display="block";
+ $("chatSection").style.display="none";
+ updateProfileHeader(currentProfileName||user.displayName);
+ showPage("chats");
+ $("chatList").innerHTML='<div class="empty-state">Загружаем чаты...</div>';
+ startChatsListener();
+}
+
+function openPublicProfile(profile){
+ currentViewedProfile=profile;
+ const name=profile.name||fullName(profile);
+ const age=calculateAge(profile.birthDate||"");
+
+ renderAvatar($("publicAvatar"),profile.avatar||"",name);
+ $("publicName").textContent=name;
+ $("publicFirstName").textContent=profile.firstName||"Не указано";
+ $("publicLastName").textContent=profile.lastName||"Не указана";
+ $("publicBirthDate").textContent=formatBirthDate(profile.birthDate);
+ $("publicAge").textContent=age===null?"Не указан":age+" лет";
+ $("publicGender").textContent=profile.gender||"Не указан";
+
+ $("mainChatsView").style.display="none";
+ $("profileSection").style.display="none";
+ $("otherSection").style.display="none";
+ $("publicProfileSection").style.display="block";
+ $("appHeader").style.display="flex";
+ $("bottomNav").style.display="none";
+}
+
+document.querySelectorAll(".nav-button").forEach(button=>{
+ button.addEventListener("click",()=>showPage(button.dataset.page));
+});
+$("profileOpenButton").addEventListener("click",()=>showPage("settings"));
+
+$("searchOpenButton").addEventListener("click",()=>{
+ if(currentPage!=="chats")showPage("chats");
+ searchPanelOpen=!searchPanelOpen;
+ $("searchPanel").classList.toggle("open",searchPanelOpen);
+ if(searchPanelOpen){
+  setTimeout(()=>$("searchInput").focus(),0);
+ }else{
+  $("searchInput").value="";
+  $("results").replaceChildren();
+  $("searchStatus").textContent="";
+ }
+});
+
+$("closeProfileButton").addEventListener("click",()=>showPage("chats"));
+
+$("changeAvatarButton").addEventListener("click",()=>{
+ const picker=$("avatarFileInput");
+ if(!currentUser){$("profileStatus").textContent="Сначала войди в аккаунт.";return;}
+ $("profileStatus").textContent="Выбери фотографию из галереи.";
+ picker.click();
+});
+
+$("avatarFileInput").addEventListener("change",async event=>{
+ const file=event.target.files&&event.target.files[0];
+ if(!file)return;
+
+ if(!file.type.startsWith("image/")){
+  $("profileStatus").textContent="Выбери изображение.";
+  return;
+ }
+
+ if(file.size>12*1024*1024){
+  $("profileStatus").textContent="Размер исходного фото должен быть меньше 12 МБ.";
+  event.target.value="";
+  return;
+ }
+
+ $("changeAvatarButton").disabled=true;
+ $("profileStatus").textContent="Обрабатываем фотографию...";
+
+ try{
+  const avatar=await compressAvatar(file);
+  await saveUserProfile(currentUser,{...currentProfile,avatar});
+  $("profileStatus").textContent="Фотография сохранена и доступна другим пользователям.";
+ }catch(error){
+  console.error(error);
+  $("profileStatus").textContent="Не удалось сохранить фото: "+error.message;
+ }finally{
+  $("changeAvatarButton").disabled=false;
+  event.target.value="";
+ }
+});
+
+$("profileBirthDate").addEventListener("change",updateAgePreview);
+
+$("saveProfileButton").addEventListener("click",async()=>{
+ if(!currentUser)return;
+
+ const firstName=$("profileFirstName").value.trim();
+ const lastName=$("profileLastName").value.trim();
+ const birthDate=$("profileBirthDate").value;
+ const gender=$("profileGender").value;
+
+ if(firstName.length<2){
+  $("profileStatus").textContent="Имя должно содержать минимум 2 символа.";
+  return;
+ }
+ if(firstName.length>40||lastName.length>40){
+  $("profileStatus").textContent="Имя и фамилия не должны быть длиннее 40 символов.";
+  return;
+ }
+ if(birthDate){
+  const age=calculateAge(birthDate);
+  if(age===null||age<0||age>120){
+   $("profileStatus").textContent="Проверь дату рождения.";
+   return;
+  }
+ }
+
+ $("saveProfileButton").disabled=true;
+ $("profileStatus").textContent="Сохраняем...";
+
+ try{
+  const profile={firstName,lastName,birthDate,gender,avatar:currentProfile.avatar||""};
+  const newName=fullName(profile);
+  await currentUser.updateProfile({displayName:newName});
+  await saveUserProfile(currentUser,profile);
+  $("profileStatus").textContent="Профиль успешно сохранён!";
+ }catch(error){
+  console.error(error);
+  $("profileStatus").textContent="Ошибка: "+error.code+" — "+error.message;
+ }finally{
+  $("saveProfileButton").disabled=false;
+ }
+});
+
+/* Регистрация */
+$("register").addEventListener("click",async()=>{
+ const name=$("name").value.trim();
+ const email=$("email").value.trim();
+ const password=$("password").value;
+
+ if(!name||!email||!password){setStatus("Заполните все поля.");return}
+ if(password.length<6){setStatus("Пароль должен содержать минимум 6 символов.");return}
+
+ $("register").disabled=true;
+ $("login").disabled=true;
+ setStatus("Создаём аккаунт...");
+
+ try{
+  const result=await auth.createUserWithEmailAndPassword(email,password);
+  await result.user.updateProfile({displayName:name});
+  const profile={firstName:name,lastName:"",birthDate:"",gender:"",avatar:""};
+  await saveUserProfile(result.user,profile);
+  showSearchApp(result.user);
+ }catch(error){
+  console.error(error);
+  setStatus("Ошибка: "+error.code+" — "+error.message);
+ }finally{
+  $("register").disabled=false;
+  $("login").disabled=false;
+ }
+});
+
+/* Вход */
+$("login").addEventListener("click",async()=>{
+ const email=$("email").value.trim();
+ const password=$("password").value;
+
+ if(!email||!password){setStatus("Введите email и пароль.");return}
+
+ $("register").disabled=true;
+ $("login").disabled=true;
+ setStatus("Выполняем вход...");
+
+ try{
+  const result=await auth.signInWithEmailAndPassword(email,password);
+  await loadUserProfile(result.user);
+  showSearchApp(result.user);
+ }catch(error){
+  console.error(error);
+  await showAuthDiagnostic(error);
+ }finally{
+  $("register").disabled=false;
+  $("login").disabled=false;
+ }
+});
+
+/* Выход */
+$("logoutButton").addEventListener("click",async()=>{
+ try{
+  stopMessagesListener();
+  stopChatsListener();
+  await auth.signOut();
+  currentUser=null;
+  currentChatId=null;
+  currentProfileName="";
+  currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
+  $("searchSection").style.display="none";
+  $("authSection").style.display="block";
+  setStatus("Вы вышли из аккаунта.");
+ }catch(error){
+  setStatus("Ошибка выхода: "+error.message);
+ }
+});
+
+/* Общий список чатов */
+function startChatsListener(){
+ stopChatsListener();
+ if(!currentUser)return;
+
+ $("chatList").innerHTML='<div class="empty-state">Загружаем чаты...</div>';
+ const uid=currentUser.uid;
+
+ chatsUnsubscribe=db.collection("chats")
+ .where("members","array-contains",uid)
+ .onSnapshot(async snapshot=>{
+  if(snapshot.empty){
+   $("chatList").innerHTML='<div class="empty-state">💬<br>Пока нет чатов.<br>Нажми на лупу и найди пользователя!</div>';
+   return;
+  }
+
+  const items=await Promise.all(snapshot.docs.map(async doc=>{
+   const data=doc.data();
+   const members=data.members||[];
+   const otherId=members.find(id=>id!==uid);
+   if(!otherId)return null;
+
+   let userName="Пользователь";
+   let userAvatar="";
+
+   try{
+    const profile=await db.collection("publicProfiles").doc(otherId).get();
+    if(profile.exists){
+     userName=profile.data().name||userName;
+     userAvatar=profile.data().avatar||"";
+    }
+   }catch(e){
+    console.error("Ошибка профиля чата",e);
+   }
+
+   const preview=data.lastMessage
+    ?((data.lastMessageSenderId===uid?"Вы: ":"")+data.lastMessage)
+    :"Начни общение";
+
+   return {
+    id:doc.id,
+    userId:otherId,
+    name:userName,
+    avatar:userAvatar,
+    preview:preview,
+    time:data.updatedAt||data.createdAt||null
+   };
+  }));
+
+  const valid=items.filter(Boolean);
+  valid.sort((a,b)=>{
+   const at=a.time&&a.time.toMillis?a.time.toMillis():0;
+   const bt=b.time&&b.time.toMillis?b.time.toMillis():0;
+   return bt-at;
+  });
+
+  $("chatList").replaceChildren();
+
+  if(!valid.length){
+   $("chatList").innerHTML='<div class="empty-state">Пока нет чатов.</div>';
+   return;
+  }
+
+  valid.forEach(item=>{
+   const row=document.createElement("div");
+   row.className="chat-item";
+
+   const avatar=document.createElement("div");
+   avatar.className="chat-avatar";
+   renderAvatar(avatar,item.avatar,item.name);
+
+   const info=document.createElement("div");
+   info.className="chat-info";
+
+   const name=document.createElement("div");
+   name.className="chat-name";
+   name.textContent=item.name;
+
+   const preview=document.createElement("div");
+   preview.className="chat-preview";
+   preview.textContent=item.preview;
+
+   const date=document.createElement("div");
+   date.className="chat-date";
+   date.textContent=formatMessageTime(item.time);
+
+   info.append(name,preview);
+   row.append(avatar,info,date);
+   row.addEventListener("click",()=>openChat(item.userId,item.name));
+   $("chatList").appendChild(row);
+  });
+ },error=>{
+  console.error("Ошибка общего списка чатов",error);
+  $("chatList").textContent="Ошибка списка чатов: "+error.code+" — "+error.message;
+ });
+}
+
+/* Открытие чата */
+async function openChat(userId,userName){
+ if(!currentUser||userId===currentUser.uid||openingChat)return;
+
+ openingChat=true;
+ stopMessagesListener();
+
+ try{
+  $("searchStatus").textContent="Открываем чат...";
+  const members=[currentUser.uid,userId].sort();
+  const chatId=members.join("_");
+  const chatRef=db.collection("chats").doc(chatId);
+  const chatSnapshot=await chatRef.get();
+
+  if(!chatSnapshot.exists){
+   await chatRef.set({
+    members:members,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+  }else{
+   const existing=chatSnapshot.data().members||[];
+   if(existing.length!==2||!existing.includes(currentUser.uid)||!existing.includes(userId)){
+    throw new Error("Не совпадают участники чата.");
+   }
+  }
+
+  currentChatId=chatId;
+  currentChatName=userName;
+  currentChatUserId=userId;
+  $("chatTitle").textContent=userName;
+
+  let chatAvatar="";
+  try{
+   const p=await db.collection("publicProfiles").doc(userId).get();
+   if(p.exists)chatAvatar=p.data().avatar||"";
+  }catch(e){
+   console.error(e);
+  }
+
+  renderAvatar($("chatHeaderAvatar"),chatAvatar,userName);
+
+  $("mainChatsView").style.display="none";
+  $("profileSection").style.display="none";
+  $("publicProfileSection").style.display="none";
+  $("otherSection").style.display="none";
+  $("appHeader").style.display="none";
+  $("bottomNav").style.display="none";
+  $("chatSection").style.display="block";
+
+  startMessagesListener(chatId);
+
+ }catch(error){
+  console.error("Ошибка открытия чата",error);
+  $("searchStatus").textContent="Не удалось открыть чат: "+(error.code||"ошибка")+" — "+error.message;
+ }finally{
+  openingChat=false;
+ }
+}
+
+/* Прокрутка к самому новому сообщению */
+function scrollChatToBottom(){
+ const box=$("chatMessages");
+ const move=()=>{
+  box.scrollTo({top:box.scrollHeight,behavior:"auto"});
+  const last=box.lastElementChild;
+  if(last)last.scrollIntoView({block:"end",behavior:"auto"});
+ };
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  move();
+  setTimeout(move,120);
+  setTimeout(move,350);
+ }));
+}
+
+/* История сообщений */
+function startMessagesListener(chatId){
+ stopMessagesListener();
+ $("chatMessages").innerHTML='<div class="empty-state">Загружаем сообщения...</div>';
+
+ messagesUnsubscribe=db.collection("chats")
+  .doc(chatId)
+  .collection("messages")
+  .orderBy("createdAt","asc")
+  .onSnapshot(snapshot=>{
+   $("chatMessages").replaceChildren();
+
+   if(snapshot.empty){
+    $("chatMessages").innerHTML='<div class="empty-state">💜<br>Пока нет сообщений.<br>Напиши первым!</div>';
+    return;
+   }
+
+   snapshot.forEach(doc=>{
+    const data=doc.data();
+    const message=document.createElement("div");
+    message.className="message";
+
+    const mine=data.senderId===currentUser.uid;
+    if(mine)message.classList.add("mine");
+
+    const author=document.createElement("div");
+    author.className="message-author";
+    author.textContent=mine?"Вы":currentChatName;
+
+    const content=document.createElement("div");
+    content.textContent=data.text||"";
+
+    const time=document.createElement("div");
+    time.className="message-time";
+    time.textContent=formatMessageTime(data.createdAt);
+
+    message.append(author,content,time);
+    $("chatMessages").appendChild(message);
+   });
+
+   scrollChatToBottom();
+  },error=>{
+   console.error(error);
+   $("chatMessages").textContent="Ошибка загрузки сообщений: "+error.code+" — "+error.message;
+  });
+}
+
+/* Отправка сообщения */
+async function sendMessage(){
+ if(!currentUser||!currentChatId)return;
+
+ const text=$("messageInput").value.trim();
+ if(!text)return;
+
+ $("sendMessageButton").disabled=true;
+
+ try{
+  await db.collection("chats")
+   .doc(currentChatId)
+   .collection("messages")
+   .add({
+    senderId:currentUser.uid,
+    text:text,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+
+  await db.collection("chats").doc(currentChatId).set({
+   lastMessage:text,
+   lastMessageSenderId:currentUser.uid,
+   updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+
+  $("messageInput").value="";
+ }catch(error){
+  console.error(error);
+  alert("Не удалось отправить сообщение: "+error.code+" — "+error.message);
+ }finally{
+  $("sendMessageButton").disabled=false;
+ }
+}
+
+// Не переводим фокус с поля ввода на кнопку отправки на телефонах.
+const messageInput=$("messageInput");
+const sendButton=$("sendMessageButton");
+["pointerdown","mousedown","touchstart"].forEach(type=>{
+ sendButton.addEventListener(type,event=>event.preventDefault(),{passive:false});
+});
+sendButton.addEventListener("click",()=>{
+ if(document.activeElement!==messageInput)messageInput.focus({preventScroll:true});
+ sendMessage();
+});
+$("messageInput").addEventListener("keydown",event=>{
+ if(event.key==="Enter"){
+  event.preventDefault();
+  sendMessage();
+ }
+});
+
+/* Возврат к чатам */
+$("backToSearchButton").addEventListener("click",()=>{
+ stopMessagesListener();
+ currentChatId=null;
+ currentChatUserId=null;
+ $("chatSection").style.display="none";
+ $("appHeader").style.display="flex";
+ $("bottomNav").style.display="flex";
+ showPage("chats");
+ $("messageInput").value="";
+});
+
+$("publicProfileBackButton").addEventListener("click",()=>showPage("chats"));
+
+$("publicMessageButton").addEventListener("click",()=>{
+ if(!currentViewedProfile)return;
+ const uid=currentViewedProfile.uid;
+ const name=currentViewedProfile.name||fullName(currentViewedProfile);
+ $("publicProfileSection").style.display="none";
+ $("bottomNav").style.display="flex";
+ openChat(uid,name);
+});
+
+/* Поиск пользователей */
+$("searchButton").addEventListener("click",async()=>{
+ if(!currentUser){
+  $("searchStatus").textContent="Сначала войдите.";
+  return;
+ }
+
+ const term=$("searchInput").value.trim().toLowerCase();
+ if(term.length<2){
+  $("searchStatus").textContent="Введите минимум 2 буквы.";
+  $("results").replaceChildren();
+  return;
+ }
+
+ $("searchButton").disabled=true;
+ $("searchStatus").textContent="Ищем пользователей...";
+ $("results").replaceChildren();
+
+ try{
+  const snapshot=await db.collection("publicProfiles")
+   .orderBy("nameLower")
+   .startAt(term)
+   .endAt(term+"\uf8ff")
+   .limit(20)
+   .get();
+
+  let found=0;
+
+  snapshot.forEach(doc=>{
+   if(doc.id===currentUser.uid)return;
+
+   const profile=doc.data();
+   const item=document.createElement("div");
+   item.className="user-result";
+
+   const avatar=document.createElement("div");
+   avatar.className="chat-avatar";
+   renderAvatar(avatar,profile.avatar||"",profile.name);
+
+   const info=document.createElement("div");
+
+   const name=document.createElement("div");
+   name.className="user-name";
+   name.textContent=profile.name||"Пользователь";
+
+   const caption=document.createElement("div");
+   caption.className="user-caption";
+
+   const age=calculateAge(profile.birthDate||"");
+   caption.textContent=[profile.gender,age===null?"":age+" лет"].filter(Boolean).join(" · ")||"Пользователь YOR 2";
+
+   info.append(name,caption);
+   item.append(avatar,info);
+
+   item.addEventListener("click",()=>{
+    openPublicProfile({...profile,uid:profile.uid||doc.id});
+   });
+
+   $("results").appendChild(item);
+   found++;
+  });
+
+  $("searchStatus").textContent=found?"Найдено пользователей: "+found:"Пользователи не найдены.";
+ }catch(error){
+  console.error(error);
+  $("searchStatus").textContent="Ошибка поиска: "+error.code+" — "+error.message;
+ }finally{
+  $("searchButton").disabled=false;
+ }
+});
+
+/* Проверка авторизации */
+auth.onAuthStateChanged(async user=>{
+ stopMessagesListener();
+ stopChatsListener();
+ currentChatId=null;
+
+ if(user){
+  try{
+   await loadUserProfile(user);
+   showSearchApp(user);
+  }catch(error){
+   console.error(error);
+   setStatus("Ошибка профиля: "+error.code+" — "+error.message);
+  }
+ }else{
+  currentUser=null;
+  currentProfileName="";
+  currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
+  $("searchSection").style.display="none";
+  $("authSection").style.display="block";
+ }
+});
+</script>
+</body>
+</html>
