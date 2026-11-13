@@ -229,10 +229,12 @@ const firebaseConfig = {
 const $=id=>document.getElementById(id);
 
 /* Временная диагностика Firebase Auth: пароль и API-ключ не сохраняются */
-window.__yorAuthDiag={status:null,body:null};
+window.__yorAuthDiag={status:null,body:null,requestKeyTail:null,requestKeyLength:null};
 (function(){
- const save=(status,body)=>{
-  window.__yorAuthDiag={status,body};
+ const save=(status,body,url)=>{
+  const match=String(url||"").match(/[?&]key=([^&]+)/);
+  let key="";try{key=decodeURIComponent(match?match[1]:"")}catch(e){}
+  window.__yorAuthDiag={status,body,requestKeyTail:key?key.slice(-6):null,requestKeyLength:key?key.length:null};
  };
  const originalOpen=XMLHttpRequest.prototype.open;
  const originalSend=XMLHttpRequest.prototype.send;
@@ -245,7 +247,7 @@ window.__yorAuthDiag={status:null,body:null};
    if(String(this.__yorAuthUrl||"").includes("identitytoolkit.googleapis.com")){
     let body="";
     try{body=this.responseText||""}catch(e){}
-    save(this.status,body);
+    save(this.status,body,this.__yorAuthUrl);
    }
   });
   return originalSend.apply(this,arguments);
@@ -256,7 +258,7 @@ window.__yorAuthDiag={status:null,body:null};
    const requestUrl=arguments[0]&&arguments[0].url?arguments[0].url:arguments[0];
    return originalFetch.apply(this,arguments).then(response=>{
     if(String(requestUrl||"").includes("identitytoolkit.googleapis.com")){
-     response.clone().text().then(body=>save(response.status,body)).catch(()=>{});
+     response.clone().text().then(body=>save(response.status,body,requestUrl)).catch(()=>{});
     }
     return response;
    });
@@ -274,6 +276,8 @@ async function showAuthDiagnostic(error){
  const details=[
   "Код Firebase: "+(error&&error.code||"нет"),
   "HTTP сервера: "+(d.status===null?"ответ не перехвачен":d.status),
+  "Ключ в запросе: "+(d.requestKeyTail?"последние 6 символов "+d.requestKeyTail+", длина "+d.requestKeyLength:"не определён"),
+  "Ключ в конфиге: "+(firebaseConfig.apiKey.slice(-6)+", длина "+firebaseConfig.apiKey.length),
   "Ответ сервера: "+(serverMessage||d.body||"не получен")
  ];
  setStatus("Ошибка входа. Диагностика:\n"+details.join("\n"));
