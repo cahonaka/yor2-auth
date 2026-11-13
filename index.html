@@ -1014,7 +1014,9 @@ async function sendPhoto(file){
  button.disabled=true;
  button.textContent="…";
  setAttachmentStatus("Загружаю фотографию…");
+ let stage="подготовка";
  try{
+  stage="загрузка в хранилище";
   const extension=fileType==="image/jpeg"?"jpg":fileType==="image/png"?"png":"webp";
   const randomPart=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+"-"+Math.random().toString(36).slice(2);
   const filePath=currentUser.uid+"/"+currentChatId+"/"+randomPart+"."+extension;
@@ -1025,12 +1027,14 @@ async function sendPhoto(file){
   if(!uploaded||!uploaded.path)throw new Error("Хранилище не вернуло путь к фотографии.");
 
   setAttachmentStatus("Фото загружено. Отправляю в чат…");
+  stage="создание ссылки на фото";
   const {data:signed,error:signedError}=await supabaseClient.storage
    .from("yor-media")
    .createSignedUrl(uploaded.path,60*60*24*7);
   if(signedError)throw signedError;
   if(!signed||!signed.signedUrl)throw new Error("Не удалось создать ссылку на фотографию.");
 
+  stage="запись сообщения в Firestore";
   await db.collection("chats").doc(currentChatId).collection("messages").add({
    senderId:currentUser.uid,
    type:"image",
@@ -1039,6 +1043,7 @@ async function sendPhoto(file){
    text:"",
    createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
+  stage="обновление списка чатов";
   await db.collection("chats").doc(currentChatId).set({
    lastMessage:"📷 Фото",
    lastMessageSenderId:currentUser.uid,
@@ -1048,7 +1053,7 @@ async function sendPhoto(file){
  }catch(error){
   console.error("Ошибка отправки фотографии",error);
   const details=[error&&error.message,error&&error.error,error&&error.statusCode].filter(Boolean).join(" · ");
-  setAttachmentStatus("Не удалось отправить фото: "+(details||"неизвестная ошибка"),true);
+  setAttachmentStatus("Ошибка на этапе «"+stage+"»: "+(details||"неизвестная ошибка"),true);
  }finally{
   button.disabled=false;
   button.textContent="＋";
