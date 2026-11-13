@@ -98,37 +98,43 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 #otherSection{display:none}
 @media(min-width:700px){#searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}}
 
-/* Светлая бело-красная тема YOR */
-:root{--bg:#fff;--panel:#fff;--panel2:#fff1f2;--purple:#d71920;--neon:#ef4444;--text:#202124;--muted:#6b7280;--line:#f1c7ca}
-body{background:#fff!important;color:#202124!important}
-#startupLoading{background:#fff;color:#c8102e}#startupLoading span{color:#6b7280}
-#authSection{background:#fff;border-color:#efb2b7;box-shadow:0 8px 30px #b91c1c12}
-.logo{color:#c8102e;text-shadow:none}
-.subtitle,label{color:#4b5563}
-input,select{background:#fff;color:#202124;border-color:#e5a3a8}
-input:focus,select:focus{border-color:#c8102e;box-shadow:0 0 0 3px #c8102e18}
-button.primary{background:linear-gradient(100deg,#b91c1c,#ef4444);color:#fff}
-#status,#searchStatus,#profileStatus{color:#991b1b}
-.app-header,.chat-top,.composer,.attachment-status{background:#fff!important;border-color:#f1c7ca!important;color:#202124}
-.header-avatar,.chat-avatar,.profile-big-avatar{background:linear-gradient(135deg,#b91c1c,#ef4444);border-color:#fca5a5;box-shadow:none}
-.brand-sub,.page-subtitle,.chat-preview,.chat-date,.user-caption,.empty-state,.profile-email,.profile-detail span{color:#6b7280}
-.icon-button,.back-button{background:#fff;border-color:#efb2b7;color:#b91c1c}
-#searchPanel,.user-result,.profile-card,.profile-detail,.placeholder-page{background:#fff;border-color:#f1c7ca;color:#202124}
+/* Полностью белая минималистичная тема YOR */
+:root{--bg:#fff;--panel:#fff;--panel2:#f7f7f7;--purple:#555;--neon:#777;--text:#202124;--muted:#777;--line:#e8e8e8}
+html,body{background:#fff!important;color:#202124!important}
+body{background:#fff!important}
+#startupLoading{background:#fff;color:#333}
+#startupLoading span{color:#777}
+#authSection{background:#fff;border-color:#e8e8e8;box-shadow:0 8px 30px #00000008}
+.logo{color:#202124;text-shadow:none}
+.subtitle,label{color:#666}
+input,select{background:#fff;color:#202124;border-color:#dedede}
+input:focus,select:focus{border-color:#888;box-shadow:0 0 0 3px #0000000b}
+button.primary{background:#f3f3f3;color:#202124;border:1px solid #dedede}
+button:disabled{opacity:.55}
+#status,#searchStatus,#profileStatus{color:#555}
+.app-header,.chat-top,.composer,.attachment-status{background:#fff!important;border-color:#e8e8e8!important;color:#202124}
+.header-avatar,.chat-avatar,.profile-big-avatar{background:#f0f0f0;border:1px solid #e3e3e3;color:#333;box-shadow:none}
+.brand-sub,.page-subtitle,.chat-preview,.chat-date,.user-caption,.empty-state,.profile-email,.profile-detail span{color:#777}
+.icon-button,.back-button{background:#fff;border:1px solid #e2e2e2;color:#333}
+#searchPanel,.user-result,.profile-card,.profile-detail,.placeholder-page{background:#fff;border-color:#e8e8e8;color:#202124}
 .section-title,.user-name,.chat-name,.page-title,.chat-person-name,.profile-display-name,.profile-detail strong{color:#202124}
-.user-result:active,.chat-item:active{background:#fff1f2}
-#chatList{background:#fff;border-color:#f1c7ca}.chat-item{border-color:#f3d6d8}
-.bottom-nav{background:#fff!important;border-color:#f1c7ca!important}
-.nav-button{color:#777}.nav-button.active{color:#c8102e;text-shadow:none}
-.back-button{color:#b91c1c}.chat-person-status{color:#b91c1c}
-.message{background:#f3f4f6;color:#202124;box-shadow:0 2px 8px #0000000d}
-.message.mine{background:#c8102e;color:#fff}
-.message-author,.message-time{color:#6b7280}
-.message.mine .message-author,.message.mine .message-time{color:#ffe4e6}
-.composer input{background:#fff;color:#202124}
-.secondary-button{background:#fff!important;border:1px solid #e5a3a8!important;color:#b91c1c!important}
-.profile-age{color:#b91c1c}
-#closePhotoViewer{background:#c8102e;border-color:#fff;color:#fff}
-@media(min-width:700px){#searchSection{border-color:#f1c7ca!important}}
+.user-result:active,.chat-item:active{background:#f7f7f7}
+#chatList{background:#fff;border-color:#e8e8e8}
+.chat-item{border-color:#ededed}
+.bottom-nav{background:#fff!important;border-color:#e8e8e8!important}
+.nav-button{color:#777}
+.nav-button.active{color:#202124;text-shadow:none;font-weight:600}
+.chat-person-status{color:#777}
+.message{background:#f3f3f3;color:#202124;box-shadow:none;border:1px solid #ededed}
+.message.mine{background:#ededed;color:#202124;box-shadow:none;border:1px solid #e5e5e5}
+.message-author,.message-time{color:#777}
+.message.mine .message-author,.message.mine .message-time{color:#666}
+.composer input{background:#fff;color:#202124;border-color:#e2e2e2}
+.composer button{background:#f3f3f3;color:#202124;border:1px solid #e2e2e2}
+.secondary-button{background:#fff!important;border:1px solid #dedede!important;color:#333!important}
+.profile-age{color:#666}
+#closePhotoViewer{background:#fff;border:1px solid #ddd;color:#222}
+@media(min-width:700px){#searchSection{border-color:#e8e8e8!important}}
 
 </style>
 </head>
