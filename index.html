@@ -137,6 +137,13 @@ button:disabled{opacity:.55}
 @media(min-width:700px){#searchSection{border-color:#e8e8e8!important}}
 
 </style>
+<style>
+/* Современные контурные значки нижней панели YOR */
+#bottomNav .nav-button .nav-icon{display:flex;align-items:center;justify-content:center;width:25px;height:25px;font-size:0}
+#bottomNav .nav-button .nav-icon svg{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#bottomNav .nav-button{gap:4px;font-size:11px}
+#bottomNav .nav-button.active .nav-icon svg{stroke-width:2.1}
+</style>
 </head>
 <body>
 
@@ -259,10 +266,18 @@ button:disabled{opacity:.55}
  </section>
 
  <nav class="bottom-nav" id="bottomNav">
-  <button class="nav-button active" data-page="chats" type="button"><span class="nav-icon">▤</span><span>Чаты</span></button>
-  <button class="nav-button" data-page="contacts" type="button"><span class="nav-icon">♙</span><span>Контакты</span></button>
-  <button class="nav-button" data-page="calls" type="button"><span class="nav-icon">☎</span><span>Звонки</span></button>
-  <button class="nav-button" data-page="settings" type="button"><span class="nav-icon">☻</span><span>Профиль</span></button>
+  <button class="nav-button active" data-page="chats" type="button" aria-label="Чаты">
+   <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8v.5Z"/><path d="M8 10h8M8 14h5"/></svg></span><span>Чаты</span>
+  </button>
+  <button class="nav-button" data-page="contacts" type="button" aria-label="Контакты">
+   <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>Контакты</span>
+  </button>
+  <button class="nav-button" data-page="calls" type="button" aria-label="Звонки">
+   <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.35 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.35 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></svg></span><span>Звонки</span>
+  </button>
+  <button class="nav-button" data-page="settings" type="button" aria-label="Профиль">
+   <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></span><span>Профиль</span>
+  </button>
  </nav>
 </section>
 
