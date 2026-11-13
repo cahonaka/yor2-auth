@@ -16,7 +16,7 @@ label{display:block;margin:16px 0 7px;color:#e7d8f5;font-size:14px}
 input,select{width:100%;padding:14px;border-radius:13px;border:1px solid #69418a;background:#090611;color:white;font-size:16px;outline:none}
 input:focus,select:focus{border-color:var(--neon);box-shadow:0 0 10px #963cff40}
 button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#7026bd,#b04cff);color:white;font-weight:bold;padding:14px}
-#authSection{width:min(100% - 32px,420px);margin:8vh auto;padding:28px 22px;border:1px solid #7138a6;border-radius:24px;background:#130d20;box-shadow:0 0 35px #963cff35}
+#startupLoading{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#d8aaff;font-weight:bold;letter-spacing:2px;text-align:center}#startupLoading span{font-size:13px;font-weight:normal;letter-spacing:0;color:#a99ab8}#authSection{display:none;width:min(100% - 32px,420px);margin:8vh auto;padding:28px 22px;border:1px solid #7138a6;border-radius:24px;background:#130d20;box-shadow:0 0 35px #963cff35}
 .logo{text-align:center;font-size:38px;font-weight:900;letter-spacing:5px;color:#d8aaff;text-shadow:0 0 18px #a34cff;margin:10px 0 8px}
 .subtitle{text-align:center;color:var(--muted);margin-bottom:28px}
 .auth-button{width:100%;margin-top:13px}
@@ -100,6 +100,8 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 </style>
 </head>
 <body>
+
+<div id="startupLoading"><div class="logo">YOR 2</div><span>Проверяем вход и подключаемся…</span></div>
 
 <section id="authSection">
  <div class="logo">YOR 2</div>
@@ -310,6 +312,7 @@ let currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
 let currentViewedProfile=null;
 let currentPage="chats";
 let searchPanelOpen=false;
+let sendingMessage=false;
 
 if(!window.firebase){
  $("status").textContent="Firebase не загрузился. Проверь интернет.";
@@ -878,6 +881,7 @@ async function openChat(userId,userName){
 
   currentChatId=chatId;
   currentChatName=userName;
+  history.pushState({yor2:true,view:"chat",chatId:chatId},"",location.pathname+location.search+"#chat");
   currentChatUserId=userId;
   $("chatTitle").textContent=userName;
 
@@ -1229,36 +1233,45 @@ $("chatPhotoInput").addEventListener("change",event=>{
  else setAttachmentStatus("Фотография не выбрана.");
 });
 
-/* Отправка сообщения */
+/* Отправка сообщения: сообщение и обновление чата сохраняются одной атомарной операцией */
 async function sendMessage(){
- if(!currentUser||!currentChatId)return;
+ if(!currentUser||!currentChatId||sendingMessage)return;
 
  const text=$("messageInput").value.trim();
  if(!text)return;
 
+ const userId=currentUser.uid;
+ const chatId=currentChatId;
+ const chatRef=db.collection("chats").doc(chatId);
+ const messageRef=chatRef.collection("messages").doc();
+ sendingMessage=true;
  $("sendMessageButton").disabled=true;
+ setAttachmentStatus("Отправляю сообщение…");
 
  try{
-  await db.collection("chats")
-   .doc(currentChatId)
-   .collection("messages")
-   .add({
-    senderId:currentUser.uid,
-    text:text,
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
-   });
-
-  await db.collection("chats").doc(currentChatId).set({
+  const batch=db.batch();
+  batch.set(messageRef,{
+   senderId:userId,
+   text:text,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  batch.set(chatRef,{
    lastMessage:text,
-   lastMessageSenderId:currentUser.uid,
+   lastMessageSenderId:userId,
    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true});
+  await batch.commit();
 
-  $("messageInput").value="";
+  if(currentChatId===chatId&&$("messageInput").value.trim()===text){
+   $("messageInput").value="";
+  }
+  if(currentChatId===chatId)setAttachmentStatus("Сообщение отправлено ✓");
  }catch(error){
-  console.error(error);
-  alert("Не удалось отправить сообщение: "+error.code+" — "+error.message);
+  console.error("Ошибка отправки сообщения",error);
+  const reason=[error&&error.code,error&&error.message].filter(Boolean).join(" — ");
+  setAttachmentStatus("Не удалось отправить сообщение: "+(reason||"проверь интернет и попробуй ещё раз"),true);
  }finally{
+  sendingMessage=false;
   $("sendMessageButton").disabled=false;
  }
 }
@@ -1280,8 +1293,8 @@ $("messageInput").addEventListener("keydown",event=>{
  }
 });
 
-/* Возврат к чатам */
-$("backToSearchButton").addEventListener("click",()=>{
+/* Возврат к чатам: поддержка кнопки внутри приложения и системной кнопки Back */
+function returnToChats(){
  stopMessagesListener();
  currentChatId=null;
  currentChatUserId=null;
@@ -1290,6 +1303,16 @@ $("backToSearchButton").addEventListener("click",()=>{
  $("bottomNav").style.display="flex";
  showPage("chats");
  $("messageInput").value="";
+ setAttachmentStatus("");
+}
+$("backToSearchButton").addEventListener("click",()=>{
+ if(history.state&&history.state.yor2&&history.state.view==="chat")history.back();
+ else returnToChats();
+});
+window.addEventListener("popstate",()=>{
+ if(!currentUser)return;
+ if(currentChatId){returnToChats();return;}
+ if($("publicProfileSection").style.display==="block")showPage("chats");
 });
 
 $("publicProfileBackButton").addEventListener("click",()=>showPage("chats"));
@@ -1386,25 +1409,31 @@ $("searchButton").addEventListener("click",async()=>{
  }
 });
 
-/* Проверка авторизации */
+/* Проверка авторизации. До ответа Firebase форма входа не показывается. */
 auth.onAuthStateChanged(async user=>{
  stopMessagesListener();
  stopChatsListener();
  currentChatId=null;
+ history.replaceState({yor2:true,view:"home"},"",location.pathname+location.search);
 
  if(user){
+  $("authSection").style.display="none";
+  $("startupLoading").style.display="flex";
   try{
    await loadUserProfile(user);
-   showSearchApp(user);
   }catch(error){
-   console.error(error);
-   setStatus("Ошибка профиля: "+error.code+" — "+error.message);
+   console.error("Не удалось загрузить профиль, но пользователь авторизован:",error);
+   currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
+   currentProfileName=user.displayName||"Пользователь";
   }
+  showSearchApp(user);
+  $("startupLoading").style.display="none";
  }else{
   currentUser=null;
   currentProfileName="";
   currentProfile={firstName:"",lastName:"",birthDate:"",gender:"",avatar:""};
   $("searchSection").style.display="none";
+  $("startupLoading").style.display="none";
   $("authSection").style.display="block";
  }
 });
