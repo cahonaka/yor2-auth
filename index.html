@@ -86,6 +86,11 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 .profile-detail{padding:14px;margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#1c122b;text-align:left}
 .profile-detail span{color:var(--muted);font-size:12px;display:block;margin-bottom:5px}
 .profile-detail strong{font-size:15px;overflow-wrap:anywhere}
+#photoViewer{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:20px}
+#photoViewer.open{display:flex}
+#photoViewer img{max-width:100%;max-height:82dvh;object-fit:contain;border-radius:12px}
+#closePhotoViewer{position:absolute;top:calc(16px + env(safe-area-inset-top));right:18px;width:44px;height:44px;border:1px solid #8c55b5;border-radius:50%;background:#21132f;color:#fff;font-size:28px}
+#chatTitle{cursor:pointer}
 .placeholder-page{padding:35px 20px;text-align:center;border:1px solid var(--line);background:var(--panel);border-radius:18px;color:var(--muted);line-height:1.7}
 #otherSection{display:none}
 @media(min-width:700px){#searchSection{max-width:700px;margin:auto;border-left:1px solid #38234e;border-right:1px solid #38234e}}
@@ -213,6 +218,8 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
  </nav>
 </section>
 
+<div id="photoViewer" role="dialog" aria-modal="true" aria-label="Просмотр фотографии"><button id="closePhotoViewer" type="button" aria-label="Закрыть">×</button><img id="photoViewerImage" alt="Фотография пользователя"></div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -315,9 +322,39 @@ function renderAvatar(el,photo,name){
  if(!el)return;
  el.style.backgroundImage="";
  el.textContent=getInitial(name);
+ el.onclick=null;
+ el.style.cursor="default";
  if(photo&&typeof photo==="string"&&photo.startsWith("data:image/")){
   el.textContent="";
   el.style.backgroundImage='url("'+photo+'")';
+  el.style.cursor="zoom-in";
+  el.onclick=event=>{
+   event.stopPropagation();
+   openPhotoViewer(photo);
+  };
+ }
+}
+function openPhotoViewer(photo){
+ if(!photo||typeof photo!=="string"||!photo.startsWith("data:image/"))return;
+ $("photoViewerImage").src=photo;
+ $("photoViewer").classList.add("open");
+}
+function closePhotoViewer(){
+ $("photoViewer").classList.remove("open");
+ $("photoViewerImage").removeAttribute("src");
+}
+async function openChatPartnerProfile(){
+ if(!currentChatUserId)return;
+ try{
+  const snap=await db.collection("publicProfiles").doc(currentChatUserId).get();
+  if(!snap.exists){
+   alert("Профиль собеседника пока не найден.");
+   return;
+  }
+  openPublicProfile({...snap.data(),uid:currentChatUserId});
+ }catch(error){
+  console.error("Ошибка открытия профиля собеседника",error);
+  alert("Не удалось открыть профиль: "+(error.code||"ошибка")+" — "+error.message);
  }
 }
 
@@ -525,6 +562,7 @@ function openPublicProfile(profile){
  $("mainChatsView").style.display="none";
  $("profileSection").style.display="none";
  $("otherSection").style.display="none";
+ $("chatSection").style.display="none";
  $("publicProfileSection").style.display="block";
  $("appHeader").style.display="flex";
  $("bottomNav").style.display="none";
@@ -983,6 +1021,18 @@ $("backToSearchButton").addEventListener("click",()=>{
 });
 
 $("publicProfileBackButton").addEventListener("click",()=>showPage("chats"));
+$("chatTitle").addEventListener("click",openChatPartnerProfile);
+$("chatHeaderAvatar").addEventListener("dblclick",openChatPartnerProfile);
+$("publicAvatar").addEventListener("click",()=>{
+ if(currentViewedProfile?.avatar)openPhotoViewer(currentViewedProfile.avatar);
+});
+$("closePhotoViewer").addEventListener("click",closePhotoViewer);
+$("photoViewer").addEventListener("click",event=>{
+ if(event.target===$("photoViewer"))closePhotoViewer();
+});
+document.addEventListener("keydown",event=>{
+ if(event.key==="Escape")closePhotoViewer();
+});
 
 $("publicMessageButton").addEventListener("click",()=>{
  if(!currentViewedProfile)return;
