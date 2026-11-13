@@ -2,6 +2,11 @@ name: YOR 2 cloud builds
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git branch to build"
+        required: true
+        default: "capacitor-migration"
   push:
     branches:
       - capacitor-migration
@@ -19,6 +24,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
