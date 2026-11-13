@@ -1,0 +1,20 @@
+{
+  "name": "yor2",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "YOR 2 cross-platform messenger",
+  "scripts": {
+    "cap:sync": "cap sync",
+    "cap:android": "cap open android",
+    "cap:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}
