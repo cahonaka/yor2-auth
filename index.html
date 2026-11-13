@@ -74,7 +74,7 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
 .composer input{flex:1;min-width:0;border-radius:25px;padding:12px 15px}
 .composer button{width:48px;min-width:44px;border-radius:50%;font-size:19px;padding:0}
 .message-image{display:block;max-width:min(260px,68vw);max-height:320px;border-radius:12px;object-fit:contain;cursor:zoom-in;margin-top:4px}
-#chatPhotoInput{display:none}
+.attachment-status{display:none;padding:7px 13px;color:#e4c9ff;font-size:12px;background:#10091b;border-top:1px solid var(--line);overflow-wrap:anywhere}.attachment-status.visible{display:block}
 #profileSection,#publicProfileSection{display:none}
 .profile-card{padding:25px 18px;border:1px solid var(--line);border-radius:20px;background:var(--panel);text-align:center}
 .profile-big-avatar{width:94px;height:94px;margin:5px auto 15px;font-size:38px}
@@ -207,11 +207,12 @@ button.primary{border:0;border-radius:13px;background:linear-gradient(100deg,#70
   </div>
   <div id="chatMessages"><div class="empty-state">Загружаем сообщения...</div></div>
   <div class="composer">
-   <input id="chatPhotoInput" type="file" accept="image/jpeg,image/png,image/webp">
+   <input id="chatPhotoInput" class="file-picker-input" type="file" accept="image/*">
    <button class="secondary-button" id="attachPhotoButton" type="button" aria-label="Отправить фото">＋</button>
    <input id="messageInput" type="text" maxlength="4000" placeholder="Напиши сообщение...">
    <button class="primary" id="sendMessageButton" type="button">➤</button>
   </div>
+  <div id="attachmentStatus" class="attachment-status" role="status" aria-live="polite"></div>
  </section>
 
  <nav class="bottom-nav" id="bottomNav">
@@ -979,32 +980,56 @@ function startMessagesListener(chatId){
 }
 
 /* Отправка фотографии через закрытое хранилище Supabase */
+function setAttachmentStatus(message,isError=false){
+ const status=$("attachmentStatus");
+ if(!status)return;
+ status.textContent=message||"";
+ status.classList.toggle("visible",!!message);
+ status.style.color=isError?"#ff9b9b":"#e4c9ff";
+}
 async function sendPhoto(file){
- if(!currentUser||!currentChatId||!file)return;
+ if(!file)return;
+ if(!currentUser||!currentChatId){
+  setAttachmentStatus("Сначала открой личный чат.",true);
+  return;
+ }
+ if(!window.supabase||!supabaseClient){
+  setAttachmentStatus("Не загрузилось хранилище фотографий. Обнови страницу и попробуй снова.",true);
+  return;
+ }
+ const mime=file.type||"";
+ const extensionFromName=(file.name||"").split(".").pop().toLowerCase();
  const allowed=["image/jpeg","image/png","image/webp"];
- if(!allowed.includes(file.type)){
-  alert("Можно отправлять только JPG, PNG или WEBP.");
+ const extensionMap={"jpg":"image/jpeg","jpeg":"image/jpeg","png":"image/png","webp":"image/webp"};
+ const fileType=allowed.includes(mime)?mime:extensionMap[extensionFromName];
+ if(!fileType){
+  setAttachmentStatus("Этот формат фото не поддерживается. Выбери JPG, PNG или WEBP.",true);
   return;
  }
  if(file.size>20*1024*1024){
-  alert("Фотография слишком большая. Максимум 20 МБ.");
+  setAttachmentStatus("Фото больше 20 МБ. Выбери файл поменьше.",true);
   return;
  }
  const button=$("attachPhotoButton");
  button.disabled=true;
  button.textContent="…";
+ setAttachmentStatus("Загружаю фотографию…");
  try{
-  const extension=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
-  const filePath=currentUser.uid+"/"+currentChatId+"/"+crypto.randomUUID()+"."+extension;
+  const extension=fileType==="image/jpeg"?"jpg":fileType==="image/png"?"png":"webp";
+  const randomPart=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+"-"+Math.random().toString(36).slice(2);
+  const filePath=currentUser.uid+"/"+currentChatId+"/"+randomPart+"."+extension;
   const {data:uploaded,error:uploadError}=await supabaseClient.storage
    .from("yor-media")
-   .upload(filePath,file,{contentType:file.type,upsert:false});
+   .upload(filePath,file,{contentType:fileType,upsert:false});
   if(uploadError)throw uploadError;
+  if(!uploaded||!uploaded.path)throw new Error("Хранилище не вернуло путь к фотографии.");
 
+  setAttachmentStatus("Фото загружено. Отправляю в чат…");
   const {data:signed,error:signedError}=await supabaseClient.storage
    .from("yor-media")
    .createSignedUrl(uploaded.path,60*60*24*7);
   if(signedError)throw signedError;
+  if(!signed||!signed.signedUrl)throw new Error("Не удалось создать ссылку на фотографию.");
 
   await db.collection("chats").doc(currentChatId).collection("messages").add({
    senderId:currentUser.uid,
@@ -1019,9 +1044,11 @@ async function sendPhoto(file){
    lastMessageSenderId:currentUser.uid,
    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true});
+  setAttachmentStatus("Фотография отправлена ✓");
  }catch(error){
   console.error("Ошибка отправки фотографии",error);
-  alert("Не удалось отправить фото: "+(error.message||error));
+  const details=[error&&error.message,error&&error.error,error&&error.statusCode].filter(Boolean).join(" · ");
+  setAttachmentStatus("Не удалось отправить фото: "+(details||"неизвестная ошибка"),true);
  }finally{
   button.disabled=false;
   button.textContent="＋";
@@ -1033,6 +1060,7 @@ $("attachPhotoButton").addEventListener("click",()=>$("chatPhotoInput").click())
 $("chatPhotoInput").addEventListener("change",event=>{
  const file=event.target.files&&event.target.files[0];
  if(file)sendPhoto(file);
+ else setAttachmentStatus("Фотография не выбрана.");
 });
 
 /* Отправка сообщения */
